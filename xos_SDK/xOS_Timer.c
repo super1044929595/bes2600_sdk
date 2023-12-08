@@ -32,10 +32,7 @@ typedef enum{
   SOFTWARE_STATUS_TIMEOUT,
   SOFTWARE_STATUS_STOP
 }JW_SOFTWARE_STATUS_E;
-typedef enum{
-    JW_SOFTWARE_PERIOD_ONECE,
-    JW_SOFTWARE_PERIOD_PERIOD
-}JW_SOFTWARE_PERIOD_MODE;
+
 typedef struct{
     JW_SOFTWARE_STATUS_E  status;
     uint8_t  mode;
@@ -167,6 +164,7 @@ uint32_t xos_timer_onececallback(uint32_t argc ,uint32_t *argv)
 	return 0;
 }
 
+
 bool xOS_SDKCreate_Timer(void)
 {
 	Software_TimerCreate();
@@ -178,8 +176,9 @@ bool xOS_SDKCreate_Timer(void)
 	}
 	osTimerStart(xos_common_timer_id,JW_SOFTWARE_TIMERNUMS);
 #endif
-	Software_TimerStart(0,JW_SOFTWARE_PERIOD_ONECE,500,xos_timer_onececallback,0,NULL);
-	Software_TimerStart(1,JW_SOFTWARE_PERIOD_PERIOD,500,xos_timer_periodcallback,0,NULL);
+//eg
+//	Software_TimerStart(0,JW_SOFTWARE_PERIOD_ONECE,500,xos_timer_onececallback,0,NULL);
+//	Software_TimerStart(1,JW_SOFTWARE_PERIOD_PERIOD,500,xos_timer_periodcallback,0,NULL);
 	xos_timer_debug("\r\n  jw xOS_SDKCreate_Timer");	
 	return false;
 }

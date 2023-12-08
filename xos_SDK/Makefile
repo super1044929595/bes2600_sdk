@@ -5,8 +5,8 @@ obj-y := $(obj-y:.c=.o)
 obj-y := $(obj-y:.cpp=.o)
 obj-y := $(obj-y:.S=.o)
 
-subdir-ccflags-y += -Iutils/list 
-
+subdir-ccflags-y += -Iutils/list  \
+                    -Iplatform/hal/best1501p \
 
 ccflags-y +=  \
     $(BLUETOOTH_ADAPTER_INCLUDES) \
@@ -31,6 +31,7 @@ ccflags-y +=  \
     -Iapps/ble_audio_test \
     -Iapps/voice_detector \
     -Iservices/ux/common/sound \
+    -Ibthost/adapter/inc/adapter_service \
     -Iutils/crc32 \
     -Iutils/list \
     -Iplatform/drivers/bt \
@@ -49,6 +50,7 @@ ccflags-y +=  \
     -Iservices/ai_voice/transport \
     -Iservices/app_ai/inc \
     -Iservices/interconnection/red \
+    -Iservices/ux/common/ibrt/ibrt_core/inc \
     -Iservices/interconnection/green \
     -Iservices/bridge/ \
     -Iservices/bt_app/a2dp_codecs/include \
@@ -69,7 +71,7 @@ ccflags-y +=  \
     -Iservices/audio_manager \
     -Iservices/ux/product/earbud_tws/inc \
     -Iservices/ux/product/earbud_tws/inc  \
-	 -Ibthost/service/ble_app_new/inc   \
+	-Ibthost/service/ble_app_new/inc   \
     -Iapps/key \
 	-Iinclude/rtos/rtx \
 	-Iapps/main \
@@ -101,4 +103,5 @@ ccflags-y +=  \
 	-Iservices/tota_v2 \
 	-Iapps/battery \
 	-Ibthost/service/ble_app_new/inc \
-	-Iutils/heap
+	-Iutils/heap \
+    -Iplatform/hal/best1501p \

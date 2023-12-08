@@ -9,6 +9,8 @@
 #include "app_utils.h"
 #include "xOS_Timer.h"
 
+
+
 #define XOS_APP_DEBUG_ENABLE
 #ifdef  XOS_APP_DEBUG_ENABLE 
 #define xos_app_debug(format,...)     TRACE(3,"%s (%d) " format "\n",__func__,__LINE__,##__VA_ARGS__);
@@ -91,14 +93,12 @@ static void osState_OP_Initing(xos_handle_state pre,xos_handle_operate operate,x
 	//----------------------------------------------------------
 
 	//----------------------------------------------------------
-
 }
+
 static void osState_OP_tws_BoxOut_Hanlde(xos_handle_state pre,xos_handle_operate operate,xos_handle_state next)
 {
 	xos_app_debug("osState_OP_tws_BoxOut_Hanlde");
-
 }
-
 
 static void osState_OP_tws_CoverOut_Hanlde(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next)
 {
@@ -127,17 +127,16 @@ static void osState_App_handle_public(xos_handle_state pre, xos_handle_operate o
 			      App User Table End
 	+--------------------------------------------------------------------------*/
 
-static uint8_t xOS_APP_TimerActiveCnt=0;
+
 #if 1
 static void xos_power_state_timerhandler(void const *param)
 {
+	#ifdef XOS_POWER_AUTO_ADJUST_ENABLE
 	if( xApp_Sleep_Mode ==1 ){
-			if(++xOS_APP_TimerActiveCnt>=3){
-				app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, APP_SYSFREQ_32K );
-				xOS_APP_TimerActiveCnt=0;
-				xos_app_debug("osState_OP_tws_BoxIN_Hanlde APP_SYSFREQ_32K ");
-			}
+		app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, APP_SYSFREQ_32K );
+		xos_app_debug("osState_OP_tws_BoxIN_Hanlde APP_SYSFREQ_32K ");
 	}
+	#endif
 }
 #endif
 
@@ -163,6 +162,18 @@ uint8_t User_APP_Init(void)
 	return osState_True;
 }
 
+uint32_t xos_enter_sleppcallback(uint32_t argc ,uint32_t *argv)
+{
+	argc=argc;
+	argv=argv;
+	
+	if(osTimerIsRunning(xOS_StateTimerhandlerId)){
+			osTimerStop(xOS_StateTimerhandlerId);
+	}
+	osTimerStart(xOS_StateTimerhandlerId,osAPP_MONITOR_INTERVER_TIME);
+	xos_app_debug("jw  start monitor timer run ...");
+	return 0;
+}
 
 
 
@@ -171,35 +182,35 @@ uint8_t User_APP_PowerState_Set(xOS_App_Op_E op)
  	switch(op){
 
 		case XOS_APP_OP_BOX_IN_E:
-		xos_app_debug("jw XOS_APP_OP_BOX_IN_E");
-		os_Handle_CurrentState_JumpeSet(osSTATE_DEFAULT_INEDEX,XOS_APP_STATE_INITDONE_E,XOS_APP_OP_BOX_IN_E );
-		os_Handle_StateSwitch(osSTATE_DEFAULT_INEDEX, XOS_APP_OP_BOX_IN_E);
-		User_App_Power_SetSleep(1);
-		osTimerStart(xOS_StateTimerhandlerId,osAPP_MONITOR_INTERVER_TIME);
+			xos_app_debug("jw XOS_APP_OP_BOX_IN_E");
+			User_App_Power_SetSleep(1);	
+			os_Handle_CurrentState_JumpeSet(osSTATE_DEFAULT_INEDEX,XOS_APP_STATE_INITDONE_E,XOS_APP_OP_BOX_IN_E );
+			os_Handle_StateSwitch(osSTATE_DEFAULT_INEDEX, XOS_APP_OP_BOX_IN_E);	
+			Software_TimerStart(0,JW_SOFTWARE_PERIOD_ONECE,5000,xos_enter_sleppcallback,0,NULL);
 		break;
 
 		case XOS_APP_OP_BOX_OUT_E:
-		xos_app_debug("jw XOS_APP_OP_BOX_OUT_E");
-		User_App_Power_SetSleep(0);
-		if(osTimerIsRunning(xOS_StateTimerhandlerId)){
-			osTimerStop(xOS_StateTimerhandlerId);
-		}
-		xOS_APP_TimerActiveCnt=0;
+			xos_app_debug("jw XOS_APP_OP_BOX_OUT_E");
+			User_App_Power_SetSleep(0);
+			app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, HAL_CMU_FREQ_52M );
+			if(osTimerIsRunning(xOS_StateTimerhandlerId)){
+				osTimerStop(xOS_StateTimerhandlerId);
+			}
 		break;
 
 		case XOS_APP_OP_COVER_IN_E:
-		xos_app_debug("jw XOS_APP_OP_COVER_IN_E");
-		User_App_Power_SetSleep(1);
-		osTimerStart(xOS_StateTimerhandlerId,osAPP_MONITOR_INTERVER_TIME);
+		    User_App_Power_SetSleep(1);	
+			xos_app_debug("jw XOS_APP_OP_COVER_IN_E");
+			Software_TimerStart(0,JW_SOFTWARE_PERIOD_ONECE,5000,xos_enter_sleppcallback,0,NULL);
 		break;
 
 		case XOS_APP_OP_COVER_OUT_E:
-		xos_app_debug("jw XOS_APP_OP_COVER_OUT_E");
-		User_App_Power_SetSleep(0);
-		if(osTimerIsRunning(xOS_StateTimerhandlerId)){
-			osTimerStop(xOS_StateTimerhandlerId);
-		}
-		xOS_APP_TimerActiveCnt=0;
+			xos_app_debug("jw XOS_APP_OP_COVER_OUT_E");
+			User_App_Power_SetSleep(0);
+			app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, HAL_CMU_FREQ_52M );
+			if(osTimerIsRunning(xOS_StateTimerhandlerId)){
+				osTimerStop(xOS_StateTimerhandlerId);
+			}
 		break;
 
 		default:

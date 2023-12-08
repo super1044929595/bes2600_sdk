@@ -11,6 +11,11 @@
 #define osState_Error 1
 #define osState_True  0
 
+
+//common function 
+#define XOS_POWER_AUTO_ADJUST_ENABLE 
+
+
 //---xapp_state_typedef
 typedef enum{
 

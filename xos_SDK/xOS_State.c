@@ -1,9 +1,6 @@
 #include "xOS_State.h"
 #include "stdio.h"
 
-
-
-
 #define XOS_STATEDEBUG_ENABLEx
 #ifdef XOS_STATEDEBUG_ENABLE 
 #define xos_state_debug(format,...)    printf("omni app[%s:%s (%d)]:" format "\n" ,__FILE__,__FUNCTION__,__LINE__,##__VA_ARGS__);
@@ -76,14 +73,12 @@ xOS_StateInfo osStateTable[STATE_TABLE_NUMBERS];
 	
     for(uint8_t i=0;i<osStateTable[index].xTablecnt;i++){
 
-	
 #ifdef XOS_STATEDEBUG_ENABLE
    		xos_state_debug("switch com [operate id:%d],prestate[%d]",osStateTable[index].xTable[i].operate,osStateTable[index].xTable[i].prestate );
 #endif
 
         if( osStateTable[index].xTable[i].operate == operateId && osStateTable[index].xTable[i].prestate == osStateTable[index].newstate ){
 
-		
 #ifdef XOS_STATEDEBUG_ENABLE
             xos_state_debug("sys pre:%d ,new:%d" ,osStateTable[index].prestate ,osStateTable[index].newstate);
 
@@ -91,7 +86,6 @@ xOS_StateInfo osStateTable[STATE_TABLE_NUMBERS];
             
             xos_state_debug("[ index:%d ][total :%d]------pre :%d , new :%d  operateId:%d \n",i,osStateTable[index].xTablecnt, osStateTable[index].newstate,osStateTable[index].xTable[i].newstate,operateId);
 #endif
-
             os_Handle_CurrentState_Set(index,osStateTable[index].xTable[i].newstate,operateId);
             
             if( osStateTable[index].xTable[i].handle ){

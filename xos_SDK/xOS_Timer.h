@@ -18,10 +18,14 @@
 #include "app_utils.h"
 #endif
 
-
+typedef enum{
+    JW_SOFTWARE_PERIOD_ONECE,
+    JW_SOFTWARE_PERIOD_PERIOD
+}JW_SOFTWARE_PERIOD_MODE;
 
 bool xOS_SDKCreate_Timer(void);
-
+void Software_TimerStart(uint32_t timer_id,uint8_t time_mode,uint32_t delay,  uint32_t (*timer_cb)\
+    (uint32_t argc ,uint32_t *argv),uint32_t argc,uint32_t *argv);
 
 #ifdef __cplusplus
 }
