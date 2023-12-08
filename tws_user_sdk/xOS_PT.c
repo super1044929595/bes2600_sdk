@@ -38,10 +38,13 @@ static void    customer_pt_init(uint8_t *pdata,uint16_t in_len,uint8_t *pout,uin
 {
 	xCustomer_PT_Mode=true;
 }
+
 static void    customer_pt_enter_dut(uint8_t *pdata,uint16_t in_len,uint8_t *pout,uint16_t len)
 {
 
 }
+
+
 
 
 
