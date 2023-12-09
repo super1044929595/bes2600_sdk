@@ -37,11 +37,10 @@ xOS_StateInfo osStateTable[STATE_TABLE_NUMBERS];
 
  void osState_handle_public(xos_handle_state pre,xos_handle_operate operate,xos_handle_state next)
 {
-    xos_state_debug("\r\n");
-
-
+   // xos_state_debug("\r\n");
 }
- void os_Handle_CurrentState_Set(uint8_t index,xos_handle_state state ,xos_handle_operate operateId)
+
+void os_Handle_CurrentState_Set(uint8_t index,xos_handle_state state ,xos_handle_operate operateId)
 {
    
     osStateTable[index].prestate=osStateTable[index].newstate;

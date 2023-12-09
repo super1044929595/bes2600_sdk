@@ -13,7 +13,7 @@
 
 
 //common function 
-#define XOS_POWER_AUTO_ADJUST_ENABLE 
+#define XOS_POWER_AUTO_ADJUST_ENABLEx 
 
 
 //---xapp_state_typedef

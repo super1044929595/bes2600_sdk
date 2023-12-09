@@ -13,7 +13,7 @@
 
 #define XOS_APP_DEBUG_ENABLE
 #ifdef  XOS_APP_DEBUG_ENABLE 
-#define xos_app_debug(format,...)     TRACE(3,"%s (%d) " format "\n",__func__,__LINE__,##__VA_ARGS__);
+#define xos_app_debug(format,...)    TRACE(5,"[xos_app.c]%s(%d)"format"",__func__,__LINE__,##__VA_ARGS__);
 //printf("app[%s:%s (%d)]:" format "\n" ,__FILE__,__FUNCTION__,__LINE__,##__VA_ARGS__);
 #else
 #define xos_app_debug(format,...) 
@@ -42,48 +42,93 @@ static void
 osState_op_tws_InitDone(xos_handle_state pre,xos_handle_operate operate,xos_handle_state next);
 static void
 osState_OP_tws_BoxIN_Hanlde(xos_handle_state pre,xos_handle_operate operate,xos_handle_state next);
-//static void
-//osState_OP_tws_BoxOut_Hanlde(xos_handle_state pre,xos_handle_operate operate,xos_handle_state next);
+static void
+osState_OP_tws_BoxOut_Hanlde(xos_handle_state pre,xos_handle_operate operate,xos_handle_state next);
 static void 
 osState_OP_tws_CoverIn_Hanlde(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next);
-//static void
-//osState_OP_tws_CoverOut_Hanlde(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next);
-//static void
-//osState_OP_tws_WearOff_Hanlde(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next);
-//static void
-//osState_OP_tws_WearOn_Hanlde(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next);
+static void
+osState_OP_tws_CoverOut_Hanlde(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next);
+static void
+osState_OP_tws_WearOff_Hanlde(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next);
+static void
+osState_OP_tws_WearOn_Hanlde(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next);
 static void 
 osState_App_handle_public(xos_handle_state pre,xos_handle_operate operate,xos_handle_state next);
+
+
 
 /*+---------------------------------------------------------------------------
 	              App User Table Init
   +--------------------------------------------------------------------------*/
-  
 const xOS_StateInfo appUserTabel[]={
-    {XOS_STATE(XOS_APP_STATE_INITING_E  , XOS_APP_STATE_INITDONE_E )      ,XOS_APP_OP_INITING_E      ,osState_op_tws_InitDone},
-    {XOS_STATE(XOS_APP_STATE_INITDONE_E , XOS_APP_STATE_BOX_IN_E   )      ,XOS_APP_OP_BOX_IN_E       ,osState_OP_tws_BoxIN_Hanlde},   
-    {XOS_STATE(XOS_APP_STATE_BOX_IN_E  ,  XOS_APP_STATE_COVER_IN_E )      ,XOS_APP_OP_BOX_OUT_E      ,osState_OP_tws_CoverIn_Hanlde},
+
+    {XOS_STATE(XOS_APP_STATE_INITING_E    ,  XOS_APP_STATE_INITDONE_E )      ,XOS_APP_OP_INITING_E     , osState_op_tws_InitDone},
+    {XOS_STATE(XOS_APP_STATE_INITDONE_E   ,  XOS_APP_STATE_BOX_IN_E   )      ,XOS_APP_OP_BOX_IN_E      , osState_OP_tws_BoxIN_Hanlde},   
+    //in box
+	{XOS_STATE(XOS_APP_STATE_BOX_IN_E     ,  XOS_APP_STATE_COVER_IN_E )      ,XOS_APP_OP_COVER_IN_E    , osState_OP_tws_CoverIn_Hanlde},
+	{XOS_STATE(XOS_APP_STATE_BOX_IN_E     ,  XOS_APP_STATE_COVER_OUT_E )     ,XOS_APP_OP_COVER_OUT_E   , osState_OP_tws_CoverOut_Hanlde},
+	//cover in
+	{XOS_STATE(XOS_APP_STATE_COVER_IN_E   ,  XOS_APP_STATE_COVER_OUT_E )     ,XOS_APP_OP_COVER_IN_E    , osState_OP_tws_CoverOut_Hanlde},
+	{XOS_STATE(XOS_APP_STATE_COVER_IN_E   ,  XOS_APP_STATE_BOX_IN_E )        ,XOS_APP_OP_BOX_IN_E      , osState_OP_tws_BoxIN_Hanlde},
+	//cover out
+	{XOS_STATE(XOS_APP_STATE_COVER_OUT_E  ,  XOS_APP_STATE_COVER_IN_E )      ,XOS_APP_OP_COVER_IN_E    , osState_OP_tws_CoverIn_Hanlde},
+	{XOS_STATE(XOS_APP_STATE_COVER_OUT_E  ,  XOS_APP_OP_BOX_OUT_E )          ,XOS_APP_OP_BOX_OUT_E     , osState_OP_tws_BoxOut_Hanlde},
+	//out box 
+	{XOS_STATE(XOS_APP_OP_BOX_OUT_E       ,  XOS_APP_STATE_WEAR_ON_E )       ,XOS_APP_OP_WEAR_ON_E     , osState_OP_tws_WearOn_Hanlde},
+    {XOS_STATE(XOS_APP_OP_BOX_OUT_E       ,  XOS_APP_STATE_BOX_IN_E )        ,XOS_APP_OP_BOX_IN_E      , osState_OP_tws_BoxIN_Hanlde},
+	//wear on
+	{XOS_STATE(XOS_APP_STATE_WEAR_ON_E    ,  XOS_APP_STATE_BOX_IN_E )        ,XOS_APP_OP_WEAR_ON_E     , osState_OP_tws_WearOn_Hanlde},
+	{XOS_STATE(XOS_APP_STATE_WEAR_ON_E    ,  XOS_APP_STATE_WAER_OFF_E )      ,XOS_APP_OP_WEAR_OFF_E    , osState_OP_tws_WearOff_Hanlde},
+	//wear off
+	{XOS_STATE(XOS_APP_STATE_WAER_OFF_E   ,  XOS_APP_STATE_WEAR_ON_E )       ,XOS_APP_OP_WEAR_ON_E    , osState_OP_tws_WearOn_Hanlde},
+	{XOS_STATE(XOS_APP_STATE_WAER_OFF_E   ,  XOS_APP_STATE_BOX_IN_E )        ,XOS_APP_OP_BOX_IN_E      , osState_OP_tws_BoxIN_Hanlde},
+
 };
 
+const char * xOS_OP_String[]={
+	"XOS_APP_OP_INITING_E",
+	"XOS_APP_OP_INITDONE_E",
+	"XOS_APP_OP_BOX_IN_E",
+	"XOS_APP_OP_BOX_OUT_E",
+	"XOS_APP_OP_COVER_IN_E",
+	"XOS_APP_OP_COVER_OUT_E",
+	"XOS_APP_OP_WEAR_ON_E",
+	"XOS_APP_OP_WEAR_OFF_E",
+};
 
+// osstate 
+const char * xOS_Sate_String[]={
+	"XOS_APP_STATE_INITING_E",
+	"XOS_APP_STATE_INITDONE_E",
+	"XOS_APP_STATE_BOX_IN_E",
+	"XOS_APP_STATE_BOX_OUT_E",
+	"XOS_APP_STATE_COVER_IN_E",
+	"XOS_APP_STATE_COVER_OUT_E",
+	"XOS_APP_STATE_WEAR_ON_E",
+	"XOS_APP_STATE_WAER_OFF_E",
+};
 
 static void osState_op_tws_InitDone(xos_handle_state pre,xos_handle_operate operate,xos_handle_state next)
 {
-	xos_app_debug("osState_op_tws_InitDone");
+	xos_app_debug("\r\n -------------- osState_op_tws_InitDone");
 };
 	
 static void osState_OP_tws_BoxIN_Hanlde(xos_handle_state pre,xos_handle_operate operate,xos_handle_state next)
 {
-	xos_app_debug("osState_OP_tws_BoxIN_Hanlde");
-	xos_APP_current_State = XOS_APP_STATE_BOX_IN_E ;
+	xos_app_debug("\r\n -------------- osState_OP_tws_BoxIN_Hanlde");
 	//add  power cost 
 
 }
 
 static void osState_OP_tws_CoverIn_Hanlde(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next)
 {
-	xos_app_debug("osState_OP_tws_CoverIn_Hanlde");
+	xos_app_debug("\r\n -------osState_OP_tws_CoverIn_Hanlde");
+}
 
+
+static void osState_OP_tws_CoverOut_Hanlde(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next)
+{
+	xos_app_debug("\r\n --------osState_OP_tws_CoverOut_Hanlde");
 }
 
 /*
@@ -93,34 +138,31 @@ static void osState_OP_Initing(xos_handle_state pre,xos_handle_operate operate,x
 	//----------------------------------------------------------
 
 	//----------------------------------------------------------
-}
+}*/
 
 static void osState_OP_tws_BoxOut_Hanlde(xos_handle_state pre,xos_handle_operate operate,xos_handle_state next)
 {
-	xos_app_debug("osState_OP_tws_BoxOut_Hanlde");
+	xos_app_debug("\r\n -------------- osState_OP_tws_BoxOut_Hanlde");
 }
 
-static void osState_OP_tws_CoverOut_Hanlde(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next)
-{
-	xos_app_debug("osState_OP_tws_CoverOut_Hanlde");
-
-}
 
 static void osState_OP_tws_WearOff_Hanlde(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next)
 {
-	xos_app_debug("osState_OP_tws_WearOff_Hanlde");
+	xos_app_debug("\r\n -------------- osState_OP_tws_WearOff_Hanlde");
 }
+
 
 static void osState_OP_tws_WearOn_Hanlde(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next)
 {
-	xos_app_debug("osState_OP_tws_WearOn_Hanlde");
-
+	xos_app_debug("\r\n --------------  osState_OP_tws_WearOn_Hanlde");
 }
-*/
+
 
 static void osState_App_handle_public(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next)
 {
-	xos_app_debug("osState_App_handle_public");
+	//xos_app_debug("osState_App_handle_public");
+	xos_APP_current_State=pre;
+	xos_app_debug("\r\n--pre state[%s][next:%s]",xOS_Sate_String[pre],xOS_Sate_String[next]);
 }
 
 /*+---------------------------------------------------------------------------
@@ -152,12 +194,13 @@ uint8_t User_APP_Init(void)
 
 	os_Handle_StateSwitch(osSTATE_DEFAULT_INEDEX, XOS_APP_OP_INITING_E);
 
+	#ifdef XOS_POWER_AUTO_ADJUST_ENABLE
 	//create timer 
 	if(xOS_StateTimerhandlerId==NULL){
 		xOS_StateTimerhandlerId=osTimerCreate (osTimer(xOS_State_timerID), osTimerPeriodic, NULL);
         //osTimerStart(xOS_StateTimerhandlerId,500);
   	}
-
+	#endif
 	xOS_SDKCreate_Timer();
 	return osState_True;
 }
@@ -179,38 +222,56 @@ uint32_t xos_enter_sleppcallback(uint32_t argc ,uint32_t *argv)
 
 uint8_t User_APP_PowerState_Set(xOS_App_Op_E op)
 {
+	
+	xos_app_debug("%s ,OP: %s",__func__,xOS_OP_String[op]);
  	switch(op){
 
 		case XOS_APP_OP_BOX_IN_E:
 			xos_app_debug("jw XOS_APP_OP_BOX_IN_E");
+			#ifdef XOS_POWER_AUTO_ADJUST_ENABLE
 			User_App_Power_SetSleep(1);	
 			os_Handle_CurrentState_JumpeSet(osSTATE_DEFAULT_INEDEX,XOS_APP_STATE_INITDONE_E,XOS_APP_OP_BOX_IN_E );
 			os_Handle_StateSwitch(osSTATE_DEFAULT_INEDEX, XOS_APP_OP_BOX_IN_E);	
 			Software_TimerStart(0,JW_SOFTWARE_PERIOD_ONECE,5000,xos_enter_sleppcallback,0,NULL);
+			#endif
 		break;
 
 		case XOS_APP_OP_BOX_OUT_E:
 			xos_app_debug("jw XOS_APP_OP_BOX_OUT_E");
+			#ifdef XOS_POWER_AUTO_ADJUST_ENABLE
 			User_App_Power_SetSleep(0);
 			app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, HAL_CMU_FREQ_52M );
 			if(osTimerIsRunning(xOS_StateTimerhandlerId)){
 				osTimerStop(xOS_StateTimerhandlerId);
 			}
+			#endif
 		break;
 
 		case XOS_APP_OP_COVER_IN_E:
+		    xos_app_debug("jw XOS_APP_OP_COVER_IN_E");
+			#ifdef XOS_POWER_AUTO_ADJUST_ENABLE
 		    User_App_Power_SetSleep(1);	
-			xos_app_debug("jw XOS_APP_OP_COVER_IN_E");
 			Software_TimerStart(0,JW_SOFTWARE_PERIOD_ONECE,5000,xos_enter_sleppcallback,0,NULL);
+			#endif
 		break;
 
 		case XOS_APP_OP_COVER_OUT_E:
 			xos_app_debug("jw XOS_APP_OP_COVER_OUT_E");
 			User_App_Power_SetSleep(0);
+			#ifdef XOS_POWER_AUTO_ADJUST_ENABLE			
 			app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, HAL_CMU_FREQ_52M );
 			if(osTimerIsRunning(xOS_StateTimerhandlerId)){
 				osTimerStop(xOS_StateTimerhandlerId);
 			}
+			#endif
+		break;
+
+		case XOS_APP_STATE_WEAR_ON_E:
+			xos_app_debug("jw XOS_APP_STATE_WEAR_ON_E");
+		break;
+
+		case XOS_APP_STATE_WAER_OFF_E:
+			xos_app_debug("jw XOS_APP_STATE_WAER_OFF_E");
 		break;
 
 		default:
@@ -219,6 +280,7 @@ uint8_t User_APP_PowerState_Set(xOS_App_Op_E op)
 	}
 	os_Handle_StateSwitch(osSTATE_DEFAULT_INEDEX,op);
 	xOS_APP_Current_Op=op;
+
 	//app_sysfreq_req(APP_SYSFREQ_USER_APP_4,APP_SYSFREQ_26M);
     return 0;
 }
@@ -235,3 +297,9 @@ uint8_t User_App_Power_GetSleep(void)
 	return xApp_Sleep_Mode;
 }
 
+
+void User_APP_PowerSeqImprove(void)
+{
+	xos_app_debug("User_APP_PowerSeqImprove ");
+	app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, HAL_CMU_FREQ_52M);
+}

@@ -105,3 +105,4 @@ ccflags-y +=  \
 	-Ibthost/service/ble_app_new/inc \
 	-Iutils/heap \
     -Iplatform/hal/best1501p \
+
