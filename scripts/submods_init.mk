@@ -1,3 +1,4 @@
+
 cur_makefile := $(lastword $(MAKEFILE_LIST))
 
 $(cur_makefile): ;

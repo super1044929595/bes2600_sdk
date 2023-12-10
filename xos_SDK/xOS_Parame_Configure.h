@@ -10,6 +10,7 @@
 #define XOS_RTX_OSSDK_ENABLE
 
 #define XOS_WQ_SDK_ENABLEx
+#define XOS_BES_SDK_ENABLE
 #define XOS_LOG_ENABLEx 
 
 //common sdk open 

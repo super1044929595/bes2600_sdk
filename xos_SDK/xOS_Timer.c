@@ -16,16 +16,6 @@
 #define JW_SOFTWARE_TIMERNUMS 100U
 typedef uint32_t (*xos_timer_callback)(uint32_t argc ,uint32_t *argv);
 
-typedef enum{
-    xOS_Timer_Module_INIT_ID=0,
-	xOS_Timer_Module_WEAR_ID,
-	xOS_Timer_Module_INBOX_ID,
-	xOS_Timer_Module_COVER_ID,
-	//add cutomer timer id
-	//end
-	xOS_Timer_Module_MAX,
-}xOS_Timer_Module_ID;
-
 
 typedef enum{
   SOFTWARE_STATUS_INIT=0,
@@ -36,6 +26,7 @@ typedef enum{
 typedef struct{
     JW_SOFTWARE_STATUS_E  status;
     uint8_t  mode;
+	uint8_t  timeractive;
     uint32_t match;
     uint32_t period;
     uint32_t (*timer_cb)(uint32_t argc ,uint32_t *argv);
@@ -72,6 +63,7 @@ void Software_TimerCreate(void)
         jw_gSoftwareTimerinfo[i].status=(JW_SOFTWARE_STATUS_E)SOFTWARE_STATUS_INIT;
         jw_gSoftwareTimerinfo[i].timer_cb=(void*)NULL;
         jw_gSoftwareTimerinfo[i].match=Software_TimerGetSystick();
+		jw_gSoftwareTimerinfo[i].timeractive=1;
     }while(i++<JW_SOFTWARE_TIMERNUMS);
 }
 void Software_TimerStart(uint32_t timer_id,uint8_t time_mode,uint32_t delay,  uint32_t (*timer_cb)\
@@ -91,6 +83,7 @@ void Software_TimerStart(uint32_t timer_id,uint8_t time_mode,uint32_t delay,  ui
     jw_gSoftwareTimerinfo[timer_id].argc     =argc;
     jw_gSoftwareTimerinfo[timer_id].status   =SOFTWARE_STATUS_INIT;
 	jw_gSoftwareTimerinfo[timer_id].mode     =time_mode;
+	jw_gSoftwareTimerinfo[timer_id].timeractive =1;
 
 	xos_timer_debug("jw Software_TimerStart ");
 #ifdef XOS_RTX_OSSDK_ENABLE
@@ -99,6 +92,13 @@ void Software_TimerStart(uint32_t timer_id,uint8_t time_mode,uint32_t delay,  ui
 	}
 #endif
 }
+
+void Software_TimerCancel(uint32_t timer_id)
+{
+	if( timer_id <=0 || timer_id>=xOS_Timer_Module_MAX ) return;
+	jw_gSoftwareTimerinfo[timer_id].timeractive =0;
+}
+
 void Software_TimerStop(uint32_t timer_id)
 {
     jw_gSoftwareTimerinfo[timer_id].status=SOFTWARE_STATUS_STOP;
@@ -127,7 +127,7 @@ static void Software_TimerUpdate(void)
 				jw_gSoftwareTimerinfo[i].match=Software_TimerGetSystick();
 			}
 			
-			if(jw_gSoftwareTimerinfo[i].timer_cb !=NULL){
+			if( (jw_gSoftwareTimerinfo[i].timer_cb !=NULL )&&(jw_gSoftwareTimerinfo[i].timeractive==1) ){
 				jw_gSoftwareTimerinfo[i].timer_cb(jw_gSoftwareTimerinfo[i].argc,jw_gSoftwareTimerinfo[i].argv);
 			}
 			
