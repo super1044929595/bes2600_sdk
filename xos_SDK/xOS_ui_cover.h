@@ -1,11 +1,11 @@
 #ifndef __XOS_UI_COVER_H
 #define __XOS_UI_COVER_H
-#ifndef __plusplus
+#ifdef __plusplus
     extern "C"{
 #endif
 
 
-#ifndef __plusplus
+#ifdef __plusplus
    }
 #endif
 #endif

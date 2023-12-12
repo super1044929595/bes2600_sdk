@@ -13,6 +13,7 @@
  * trademark and other intellectual property rights.
  *
  ****************************************************************************/
+ #if 0
 #include "stdio.h"
 #include "cmsis_os.h"
 #include "hal_trace.h"
@@ -324,3 +325,4 @@ static xos_list_node_t *xos_list_free_node_(xos_list_t *xos_list, xos_list_node_
 
   return next;
 }
+#endif

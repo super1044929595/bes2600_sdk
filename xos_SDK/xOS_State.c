@@ -1,7 +1,11 @@
 #include "xOS_State.h"
 #include "stdio.h"
+#include "app_thread.h"
+#include "cmsis_os.h"
+#include "app_thread.h"
 
-#define XOS_STATEDEBUG_ENABLEx
+
+#define XOS_STATEDEBUG_ENABLE
 #ifdef XOS_STATEDEBUG_ENABLE 
 #define xos_state_debug(format,...)    printf("omni app[%s:%s (%d)]:" format "\n" ,__FILE__,__FUNCTION__,__LINE__,##__VA_ARGS__);
 #else
@@ -12,6 +16,8 @@
 #define CURRENT_OMNI_DEFAULT  0U
 xOS_StateInfo osStateTable[STATE_TABLE_NUMBERS];
 
+osMutexId xos_power_mutex_id = NULL;
+osMutexDef(xos_power_mutex);
 
  void os_HanldeTableInit(uint8_t index, const xOS_StateInfo *info,uint8_t table_size)
 {
@@ -28,6 +34,12 @@ xOS_StateInfo osStateTable[STATE_TABLE_NUMBERS];
 	
     xos_state_debug("\r\n");
     
+    if(xos_power_mutex_id == NULL)
+    {
+        xos_power_mutex_id = osMutexCreate((osMutex(xos_power_mutex)));
+    }
+	osMutexRelease(xos_power_mutex_id);	
+
 }
 
  void os_handleTable_PublicHandle_Register(uint8_t index,xos_handle handle )
@@ -43,6 +55,8 @@ xOS_StateInfo osStateTable[STATE_TABLE_NUMBERS];
 void os_Handle_CurrentState_Set(uint8_t index,xos_handle_state state ,xos_handle_operate operateId)
 {
    
+    osMutexWait(xos_power_mutex_id, osWaitForever);
+
     osStateTable[index].prestate=osStateTable[index].newstate;
     
     osStateTable[index].newstate=state;
@@ -57,15 +71,19 @@ void os_Handle_CurrentState_Set(uint8_t index,xos_handle_state state ,xos_handle
         
     }
    
-    printf(" \r\n os_Handle_CurrentState_Set pre state:[%d], new state:[%d] ,operateId:[%d] \n ", osStateTable[index].prestate,state,operateId);
-    
+    //printf(" \r\n os_Handle_CurrentState_Set pre state:[%d], new state:[%d] ,operateId:[%d] \n ", osStateTable[index].prestate,state,operateId);
+    osMutexRelease(xos_power_mutex_id);
+
 }
+
 
 
 
 
  void os_Handle_StateSwitch(uint8_t index,xos_handle_operate operateId)
 {
+    osMutexWait(xos_power_mutex_id, osWaitForever);
+
     #ifdef XOS_STATEDEBUG_ENABLE
     xos_state_debug("switch[op id:%d],newstate[%d]",operateId,osStateTable[index].newstate);
 	#endif
@@ -73,17 +91,17 @@ void os_Handle_CurrentState_Set(uint8_t index,xos_handle_state state ,xos_handle
     for(uint8_t i=0;i<osStateTable[index].xTablecnt;i++){
 
 #ifdef XOS_STATEDEBUG_ENABLE
-   		xos_state_debug("switch com [operate id:%d],prestate[%d]",osStateTable[index].xTable[i].operate,osStateTable[index].xTable[i].prestate );
+   		xos_state_debug("-xos-[op:%d],pres[%d],now[%d]",osStateTable[index].xTable[i].operate,osStateTable[index].xTable[i].prestate,osStateTable[index].newstate);
 #endif
 
         if( osStateTable[index].xTable[i].operate == operateId && osStateTable[index].xTable[i].prestate == osStateTable[index].newstate ){
 
 #ifdef XOS_STATEDEBUG_ENABLE
-            xos_state_debug("sys pre:%d ,new:%d" ,osStateTable[index].prestate ,osStateTable[index].newstate);
+            //xos_state_debug("sys pre:%d ,new:%d" ,osStateTable[index].prestate ,osStateTable[index].newstate);
 
-		    xos_state_debug("usr pre:%d ,new:%d" ,osStateTable[index].xTable[i].prestate ,osStateTable[index].xTable[i].newstate);
+		    //xos_state_debug("usr pre:%d ,new:%d" ,osStateTable[index].xTable[i].prestate ,osStateTable[index].xTable[i].newstate);
             
-            xos_state_debug("[ index:%d ][total :%d]------pre :%d , new :%d  operateId:%d \n",i,osStateTable[index].xTablecnt, osStateTable[index].newstate,osStateTable[index].xTable[i].newstate,operateId);
+            //xos_state_debug("[ index:%d ][total :%d]------pre :%d , new :%d  operateId:%d \n",i,osStateTable[index].xTablecnt, osStateTable[index].newstate,osStateTable[index].xTable[i].newstate,operateId);
 #endif
             os_Handle_CurrentState_Set(index,osStateTable[index].xTable[i].newstate,operateId);
             
@@ -99,11 +117,14 @@ void os_Handle_CurrentState_Set(uint8_t index,xos_handle_state state ,xos_handle
         
     }
     
+    osMutexRelease(xos_power_mutex_id);
+
 }
 
 
 void os_Handle_CurrentState_JumpeSet(uint8_t index, xos_handle_state state, xos_handle_operate operateId)
  {
+     osMutexWait(xos_power_mutex_id, osWaitForever);
 
 	for (uint8_t i = 0; i < osStateTable[index].xTablecnt; i++) {
 
@@ -115,7 +136,7 @@ void os_Handle_CurrentState_JumpeSet(uint8_t index, xos_handle_state state, xos_
 
 			if (osStateTable[index].xTable[i].handle !=(void*)NULL) {
 
-	//printf("\r\n hanle the public handle on CurrentState ");
+	            //printf("\r\n hanle the public handle on CurrentState ");
 
 			    osStateTable[index].xTable[i].handle(osStateTable[index].xTable[i].prestate, operateId, osStateTable[index].xTable[i].newstate);
 
@@ -127,7 +148,7 @@ void os_Handle_CurrentState_JumpeSet(uint8_t index, xos_handle_state state, xos_
 	  }
 
 	}
-
+    osMutexRelease(xos_power_mutex_id);
  }
 
 

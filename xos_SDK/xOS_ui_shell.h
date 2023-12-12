@@ -1,9 +1,13 @@
 #ifndef __XOS_UI_SHELL_H
 #define __XOS_UI_SHELL_H
-#ifndef __plusplus
+#ifdef __plusplus
     extern "C"{
 #endif
 #include "xOS_typedef.h"
+#include "cmsis_os.h"
+#include "app_thread.h"
+#include "app_utils.h"
+#include "xOS_Timer.h"
 
 typedef enum{
 XOS_UI_WEAR_MOD,
@@ -25,7 +29,7 @@ bool xos_ui_shell_send(XOS_Shell_UI_Mod_E mod,uint8_t *pdata,uint16_t len);
 
 bool xos_ui_shell_register(XOS_Shell_UI_Mod_E xshell_mod,xos_ui_shell_handle_typedef xshell_app);
 
-#ifndef __plusplus
+#ifdef __plusplus
    }
 #endif
 #endif

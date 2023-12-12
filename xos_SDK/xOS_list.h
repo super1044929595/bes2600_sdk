@@ -1,6 +1,4 @@
 /***************************************************************************
- *
- * Copyright 2015-2019 BES.
  * All rights reserved. All unpublished rights reserved.
  *
  * No part of this work may be used or reproduced in any form or by any
@@ -17,7 +15,7 @@
 
 #ifndef __xos_list_H__
 #define __xos_list_H__
-
+#if 0
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -84,6 +82,6 @@ void *xos_list_node(const xos_list_node_t *node);
 #ifdef __cplusplus
 	}
 #endif
-
+#endif//if 0
 #endif//__FMDEC_H__
 

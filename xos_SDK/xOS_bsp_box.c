@@ -4,6 +4,6 @@
 
 bool xos_bsp_box_init(void)
 {
-
+    return false;
 }
 

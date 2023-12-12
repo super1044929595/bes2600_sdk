@@ -26,7 +26,6 @@ typedef enum{
 typedef struct{
     JW_SOFTWARE_STATUS_E  status;
     uint8_t  mode;
-	uint8_t  timeractive;
     uint32_t match;
     uint32_t period;
     uint32_t (*timer_cb)(uint32_t argc ,uint32_t *argv);
@@ -46,6 +45,9 @@ static osTimerId xos_common_timer_id = NULL;
 #endif
 static void Software_TimerUpdate(void);
 //--------------------------------------------------------------------
+osMutexId xos_common_timer_mutex_id = NULL;
+osMutexDef(xos_common_timer_mutex);
+
 
 
 uint32_t Software_TimerGetSystick(void)
@@ -63,18 +65,16 @@ void Software_TimerCreate(void)
         jw_gSoftwareTimerinfo[i].status=(JW_SOFTWARE_STATUS_E)SOFTWARE_STATUS_INIT;
         jw_gSoftwareTimerinfo[i].timer_cb=(void*)NULL;
         jw_gSoftwareTimerinfo[i].match=Software_TimerGetSystick();
-		jw_gSoftwareTimerinfo[i].timeractive=1;
     }while(i++<JW_SOFTWARE_TIMERNUMS);
 }
 void Software_TimerStart(uint32_t timer_id,uint8_t time_mode,uint32_t delay,  uint32_t (*timer_cb)\
     (uint32_t argc ,uint32_t *argv),uint32_t argc,uint32_t *argv)
 {
-
 	if( (timer_id>=xOS_Timer_Module_MAX) || (delay<=0) ) return ;
 
 	if( timer_cb == NULL) return ;
 	
-	delay=delay*3;//gain 
+	delay=delay;//gain 
 
     jw_gSoftwareTimerinfo[timer_id].period   =Software_TimerGetSystick();
     jw_gSoftwareTimerinfo[timer_id].match    =Software_TimerGetSystick()+delay;
@@ -83,20 +83,28 @@ void Software_TimerStart(uint32_t timer_id,uint8_t time_mode,uint32_t delay,  ui
     jw_gSoftwareTimerinfo[timer_id].argc     =argc;
     jw_gSoftwareTimerinfo[timer_id].status   =SOFTWARE_STATUS_INIT;
 	jw_gSoftwareTimerinfo[timer_id].mode     =time_mode;
-	jw_gSoftwareTimerinfo[timer_id].timeractive =1;
 
 	xos_timer_debug("jw Software_TimerStart ");
+	
 #ifdef XOS_RTX_OSSDK_ENABLE
-	if(osOK!=osTimerStart(xos_common_timer_id,XOS_COMMON_BASETIME)){
-		xos_timer_debug("jw xtimer start error");
+	if(xos_common_timer_id!=NULL){
+		
+		if(osTimerIsRunning(xos_common_timer_id)){
+			osTimerStop(xos_common_timer_id);
+		}	
+
+		if(osOK!=osTimerStart(xos_common_timer_id,XOS_COMMON_BASETIME)){
+			xos_timer_debug("jw xtimer start error ");
+		}
+
 	}
 #endif
 }
 
 void Software_TimerCancel(uint32_t timer_id)
 {
-	if( timer_id <=0 || timer_id>=xOS_Timer_Module_MAX ) return;
-	jw_gSoftwareTimerinfo[timer_id].timeractive =0;
+	if( timer_id <0 || timer_id>=xOS_Timer_Module_MAX ) return;
+	
 }
 
 void Software_TimerStop(uint32_t timer_id)
@@ -127,7 +135,7 @@ static void Software_TimerUpdate(void)
 				jw_gSoftwareTimerinfo[i].match=Software_TimerGetSystick();
 			}
 			
-			if( (jw_gSoftwareTimerinfo[i].timer_cb !=NULL )&&(jw_gSoftwareTimerinfo[i].timeractive==1) ){
+			if( jw_gSoftwareTimerinfo[i].timer_cb !=NULL ){
 				jw_gSoftwareTimerinfo[i].timer_cb(jw_gSoftwareTimerinfo[i].argc,jw_gSoftwareTimerinfo[i].argv);
 			}
 			
@@ -144,7 +152,9 @@ static void Software_TimerUpdate(void)
 #ifdef XOS_RTX_OSSDK_ENABLE
 static void xos_common_timeout_timer_cb(void const *n)
 {
+	//osMutexWait(xos_common_timer_id, osWaitForever);
 	Software_TimerUpdate();//insert 
+	//osMutexRelease(xos_common_timer_id);		
 }
 #endif
 
@@ -165,16 +175,27 @@ uint32_t xos_timer_onececallback(uint32_t argc ,uint32_t *argv)
 }
 
 
+
 bool xOS_SDKCreate_Timer(void)
 {
+	
 	Software_TimerCreate();
+
 #ifdef XOS_RTX_OSSDK_ENABLE
+    if(xos_common_timer_mutex_id == NULL)
+    {
+        xos_common_timer_mutex_id = osMutexCreate((osMutex(xos_common_timer_mutex)));
+    }
+	osMutexRelease(xos_common_timer_id);	
+	
 	if( xos_common_timer_id == NULL ){
 		xos_common_timer_id = osTimerCreate(osTimer(xOS_COMMON_TIMER_ID), osTimerPeriodic, NULL);
 	}else{
 		xos_timer_debug("\r\n xOS_SDKCreate_Timer create error !");	
+		return true;
 	}
-	osTimerStart(xos_common_timer_id,JW_SOFTWARE_TIMERNUMS);
+
+	//osTimerStart(xos_common_timer_id,JW_SOFTWARE_TIMERNUMS);
 #endif
 //eg
 //	Software_TimerStart(0,JW_SOFTWARE_PERIOD_ONECE,500,xos_timer_onececallback,0,NULL);

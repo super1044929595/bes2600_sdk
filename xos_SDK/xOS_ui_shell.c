@@ -20,21 +20,21 @@ osPoolDef (xos_shell_mempoolid, 1000U, uint8_t);
 osPoolId   xos_shell_mempoolid = NULL;
 #endif
 
-//method
-static bool xOS_ui_shell_handle(XOS_Shell_UI_Mod_E mod,uint8_t *pdata,uint16_t len);
 //member
 static xos_ui_shell_handle_typedef xos_shell_module_handle[XOS_UI_MAX_MOD];
-
-
+#ifdef XOS_BES_SDK_ENABLE
+//method
+static bool xOS_ui_shell_handle(XOS_Shell_UI_Mod_E mod,uint8_t *pdata,uint16_t len);
 
 static void xos_ui_shell_thread(void const *argument)
 {
+	argument=argument;
+	#ifdef XOS_BES_SDK_ENABLE
     osEvent              _xshell_event;
     xOS_UI_shell_Info_t *_xshell_info=NULL;
     for( ; ; )
     {
         //wait os singal
-        #ifdef XOS_BES_SDK_ENABLE
 		_xshell_event=osMailGet(xos_ui_shell_mailbox,100000);
 		if(_xshell_event.status=osEventMail){
 			_xshell_info=(xOS_UI_shell_Info_t*)_xshell_event.value;
@@ -44,9 +44,9 @@ static void xos_ui_shell_thread(void const *argument)
 			}			
 			osMailFree(xos_ui_shell_mailbox,&_xshell_event);
 		}
-		#endif
+		
     }
-    return false;
+	#endif
 }
 
 
@@ -65,8 +65,9 @@ static bool xOS_ui_shell_handle(XOS_Shell_UI_Mod_E mod,uint8_t *pdata,uint16_t l
 	default:
 	break;
 	}
+	return false;
 }
-
+#endif
 
 bool xos_ui_shell_init(void)
 {
@@ -102,6 +103,7 @@ bool xos_ui_shell_init(void)
 bool xos_ui_shell_send(XOS_Shell_UI_Mod_E mod,uint8_t *pdata,uint16_t len)
 {
     if( pdata==NULL || len<=0) return true;
+	#ifdef XOS_BES_SDK_ENABLE
     //
     xOS_UI_shell_Info_t *_xshell_info=NULL;
     _xshell_info=(xOS_UI_shell_Info_t*)osMailAlloc(xos_ui_shell_mailbox, 1000);
@@ -115,6 +117,7 @@ bool xos_ui_shell_send(XOS_Shell_UI_Mod_E mod,uint8_t *pdata,uint16_t len)
     	xos_shell_debug("\r\n xos_ui_shell_send");
     }
     //end
+	#endif
     return false;
 }
 

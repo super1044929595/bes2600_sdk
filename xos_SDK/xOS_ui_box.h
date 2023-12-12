@@ -5,6 +5,8 @@
 #include "stdint.h"
 #include "stddef.h"
 #include "hal_trace.h"
+#include "xOS_typedef.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

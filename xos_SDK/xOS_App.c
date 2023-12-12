@@ -13,8 +13,8 @@
 
 #define XOS_APP_DEBUG_ENABLE
 #ifdef  XOS_APP_DEBUG_ENABLE 
-#define xos_app_debug(format,...)    TRACE(5,"[xos_app.c]%s(%d)"format"",__func__,__LINE__,##__VA_ARGS__);
-//printf("app[%s:%s (%d)]:" format "\n" ,__FILE__,__FUNCTION__,__LINE__,##__VA_ARGS__);
+
+#define xos_app_debug(format,...)     TRACE(5,"[xos app]%s (%d) " format "\n",__func__,__LINE__,##__VA_ARGS__);
 #else
 #define xos_app_debug(format,...) 
 #endif
@@ -26,7 +26,7 @@
 
 static  xOS_App_Op_E     xOS_APP_Current_Op=XOS_APP_OP_INITING_E;
 static  xOS_App_State_E  xos_APP_current_State=XOS_APP_STATE_INITING_E;
-static  xOS_App_Op_E     xos_APP_current_PowerOp=XOS_APP_OP_INITING_E;
+//static  xOS_App_Op_E     xos_APP_current_PowerOp=XOS_APP_OP_INITING_E;
 static  uint8_t xApp_Sleep_Mode = 0;
 
 
@@ -38,10 +38,11 @@ osTimerDef(xOS_State_timerID,xos_power_state_timerhandler);
 static osTimerId xOS_StateTimerhandlerId = NULL;
 #endif
 
-
 //Powerconsumption
 static uint32_t xOS_Increase_PowerConsumption(uint32_t argc ,uint32_t *argv);
 static uint32_t xOS_Decrease_PowerConsumption(uint32_t argc ,uint32_t *argv);
+static uint32_t xOS_Increase_PowerConsumptionStop(uint32_t argc ,uint32_t *argv);
+
 
 // UI handle
 static void
@@ -116,12 +117,12 @@ const char * xOS_Sate_String[]={
 
 static void osState_op_tws_InitDone(xos_handle_state pre,xos_handle_operate operate,xos_handle_state next)
 {
-	xos_app_debug("\r\n -------------- osState_op_tws_InitDone");
+	xos_app_debug("\r\n -------osState_op_tws_InitDone");
 };
 	
 static void osState_OP_tws_BoxIN_Hanlde(xos_handle_state pre,xos_handle_operate operate,xos_handle_state next)
 {
-	xos_app_debug("\r\n -------------- osState_OP_tws_BoxIN_Hanlde");
+	xos_app_debug("\r\n -------osState_OP_tws_BoxIN_Hanlde");
 }
 
 static void osState_OP_tws_CoverIn_Hanlde(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next)
@@ -146,19 +147,19 @@ static void osState_OP_Initing(xos_handle_state pre,xos_handle_operate operate,x
 
 static void osState_OP_tws_BoxOut_Hanlde(xos_handle_state pre,xos_handle_operate operate,xos_handle_state next)
 {
-	xos_app_debug("\r\n -------------- osState_OP_tws_BoxOut_Hanlde");
+	xos_app_debug("\r\n -------osState_OP_tws_BoxOut_Hanlde");
 }
 
 
 static void osState_OP_tws_WearOff_Hanlde(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next)
 {
-	xos_app_debug("\r\n -------------- osState_OP_tws_WearOff_Hanlde");
+	xos_app_debug("\r\n -------osState_OP_tws_WearOff_Hanlde");
 }
 
 
 static void osState_OP_tws_WearOn_Hanlde(xos_handle_state pre, xos_handle_operate operate, xos_handle_state next)
 {
-	xos_app_debug("\r\n --------------  osState_OP_tws_WearOn_Hanlde");
+	xos_app_debug("\r\n -------osState_OP_tws_WearOn_Hanlde");
 }
 
 
@@ -166,7 +167,7 @@ static void osState_App_handle_public(xos_handle_state pre, xos_handle_operate o
 {
 	//xos_app_debug("osState_App_handle_public");
 	xos_APP_current_State=pre;
-	xos_app_debug("\r\n--pre state[%s][next:%s]",xOS_Sate_String[pre],xOS_Sate_String[next]);
+    //xos_app_debug("\r\n--pre state[%s][next:%s]",xOS_Sate_String[pre],xOS_Sate_String[next]);
 }
 
 /*+---------------------------------------------------------------------------
@@ -186,10 +187,8 @@ static void xos_power_state_timerhandler(void const *param)
 }
 #endif
 
-
-uint8_t User_APP_Init(void)
+static uint32_t User_APP_PowerStateTableInit(uint32_t argc ,uint32_t *argv)
 {
-	//led_demo_init();
     os_HanldeTableInit(0,appUserTabel,sizeof(appUserTabel)/sizeof(appUserTabel[0]));
 
     os_handleTable_PublicHandle_Register(0, osState_App_handle_public);
@@ -198,6 +197,15 @@ uint8_t User_APP_Init(void)
 
 	os_Handle_StateSwitch(osSTATE_DEFAULT_INEDEX, XOS_APP_OP_INITING_E);
 
+	User_App_Power_SetSleep(0);
+
+	return 0;
+}
+
+uint8_t User_APP_Init(void)
+{
+	User_APP_PowerStateTableInit(0,NULL);
+
 	#ifdef XOS_POWER_AUTO_ADJUST_ENABLE
 	//create timer 
 	if(xOS_StateTimerhandlerId==NULL){
@@ -205,7 +213,15 @@ uint8_t User_APP_Init(void)
         //osTimerStart(xOS_StateTimerhandlerId,500);
   	}
 	#endif
-	xOS_SDKCreate_Timer();
+	
+	#if 1
+	 if(xOS_SDKCreate_Timer()){
+		xos_app_debug(" create time error !");
+	 }
+	 #endif
+
+	//Software_TimerStart(xOS_Timer_Module_POWERCONSUMPTION_ID,JW_SOFTWARE_PERIOD_ONECE,5000,User_APP_PowerStateTableInit,0,NULL);
+
 	return osState_True;
 }
 
@@ -225,68 +241,44 @@ uint32_t xos_enter_sleppcallback(uint32_t argc ,uint32_t *argv)
 
 
 uint8_t User_APP_PowerState_Set(xOS_App_Op_E op)
-{
-	
+{	
 	xos_app_debug("%s ,OP: %s",__func__,xOS_OP_String[op]);
  	switch(op){
 
 		case XOS_APP_OP_BOX_IN_E:
 			xos_app_debug("jw XOS_APP_OP_BOX_IN_E");
-			#ifdef XOS_POWER_AUTO_ADJUST_ENABLE
-			User_App_Power_SetSleep(1);	
-			os_Handle_CurrentState_JumpeSet(osSTATE_DEFAULT_INEDEX,XOS_APP_STATE_INITDONE_E,XOS_APP_OP_BOX_IN_E );
-			os_Handle_StateSwitch(osSTATE_DEFAULT_INEDEX, XOS_APP_OP_BOX_IN_E);	
-			#endif
-			Software_TimerCancel(xOS_Timer_Module_POWERCONSUMPTION_ID);
-			Software_TimerStart(xOS_Timer_Module_POWERCONSUMPTION_ID,JW_SOFTWARE_PERIOD_ONECE,5000,xOS_Decrease_PowerConsumption,0,NULL);
+			//Software_TimerCancel(xOS_Timer_Module_POWERCONSUMPTION_ID);
+			//Software_TimerStart(xOS_Timer_Module_POWERCONSUMPTION_ID,JW_SOFTWARE_PERIOD_ONECE,5000,xOS_Decrease_PowerConsumption,0,NULL);
 		break;
 
 		case XOS_APP_OP_BOX_OUT_E:
 			xos_app_debug("jw XOS_APP_OP_BOX_OUT_E");
-			#ifdef XOS_POWER_AUTO_ADJUST_ENABLE
-			User_App_Power_SetSleep(0);
-			app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, HAL_CMU_FREQ_52M );
-			if(osTimerIsRunning(xOS_StateTimerhandlerId)){
-				osTimerStop(xOS_StateTimerhandlerId);
-			}
-			#endif
-			Software_TimerCancel(xOS_Timer_Module_POWERCONSUMPTION_ID);
-			Software_TimerStart(xOS_Timer_Module_POWERCONSUMPTION_ID,JW_SOFTWARE_PERIOD_ONECE,5000,xOS_Increase_PowerConsumption,0,NULL);
+			//Software_TimerCancel(xOS_Timer_Module_POWERCONSUMPTION_ID);
+			//Software_TimerStart(xOS_Timer_Module_POWERCONSUMPTION_ID,JW_SOFTWARE_PERIOD_ONECE,1,xOS_Increase_PowerConsumption,0,NULL);
 		break;
 
 		case XOS_APP_OP_COVER_IN_E:
 		    xos_app_debug("jw XOS_APP_OP_COVER_IN_E");
-			#ifdef XOS_POWER_AUTO_ADJUST_ENABLE
-		    User_App_Power_SetSleep(1);	
-			Software_TimerStart(0,JW_SOFTWARE_PERIOD_ONECE,5000,xos_enter_sleppcallback,0,NULL);
-			#endif
-			Software_TimerCancel(xOS_Timer_Module_POWERCONSUMPTION_ID);
-			Software_TimerStart(xOS_Timer_Module_POWERCONSUMPTION_ID,JW_SOFTWARE_PERIOD_ONECE,5000,xOS_Decrease_PowerConsumption,0,NULL);
+			//Software_TimerCancel(xOS_Timer_Module_POWERCONSUMPTION_ID);
+			//Software_TimerStart(xOS_Timer_Module_POWERCONSUMPTION_ID,JW_SOFTWARE_PERIOD_ONECE,5000,xOS_Decrease_PowerConsumption,0,NULL);
 		break;
 
 		case XOS_APP_OP_COVER_OUT_E:
 			xos_app_debug("jw XOS_APP_OP_COVER_OUT_E");
-			User_App_Power_SetSleep(0);
-			#ifdef XOS_POWER_AUTO_ADJUST_ENABLE			
-			app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, HAL_CMU_FREQ_52M );
-			if(osTimerIsRunning(xOS_StateTimerhandlerId)){
-				osTimerStop(xOS_StateTimerhandlerId);
-			}
-			#endif
-			Software_TimerCancel(xOS_Timer_Module_POWERCONSUMPTION_ID);
-			Software_TimerStart(xOS_Timer_Module_POWERCONSUMPTION_ID,JW_SOFTWARE_PERIOD_ONECE,5000,xOS_Increase_PowerConsumption,0,NULL);
+			//Software_TimerCancel(xOS_Timer_Module_POWERCONSUMPTION_ID);
+			//Software_TimerStart(xOS_Timer_Module_POWERCONSUMPTION_ID,JW_SOFTWARE_PERIOD_ONECE,1,xOS_Increase_PowerConsumption,0,NULL);
 		break;
 
-		case XOS_APP_STATE_WEAR_ON_E:
+		case XOS_APP_OP_WEAR_ON_E:
 			xos_app_debug("jw XOS_APP_STATE_WEAR_ON_E");
-			Software_TimerCancel(xOS_Timer_Module_POWERCONSUMPTION_ID);
-			Software_TimerStart(xOS_Timer_Module_POWERCONSUMPTION_ID,JW_SOFTWARE_PERIOD_ONECE,5000,xOS_Increase_PowerConsumption,0,NULL);
+			//Software_TimerCancel(xOS_Timer_Module_POWERCONSUMPTION_ID);
+			//Software_TimerStart(xOS_Timer_Module_POWERCONSUMPTION_ID,JW_SOFTWARE_PERIOD_ONECE,10,xOS_Increase_PowerConsumption,0,NULL);
 		break;
 
-		case XOS_APP_STATE_WAER_OFF_E:
+		case XOS_APP_OP_WEAR_OFF_E:
 			xos_app_debug("jw XOS_APP_STATE_WAER_OFF_E");
-		    Software_TimerCancel(xOS_Timer_Module_POWERCONSUMPTION_ID);
-			Software_TimerStart(xOS_Timer_Module_POWERCONSUMPTION_ID,JW_SOFTWARE_PERIOD_ONECE,5000,xOS_Decrease_PowerConsumption,0,NULL);
+		    //Software_TimerCancel(xOS_Timer_Module_POWERCONSUMPTION_ID);
+			//Software_TimerStart(xOS_Timer_Module_POWERCONSUMPTION_ID,JW_SOFTWARE_PERIOD_ONECE,5000,xOS_Decrease_PowerConsumption,0,NULL);
 		break;
 
 		default:
@@ -296,7 +288,10 @@ uint8_t User_APP_PowerState_Set(xOS_App_Op_E op)
 	os_Handle_StateSwitch(osSTATE_DEFAULT_INEDEX,op);
 	xOS_APP_Current_Op=op;
 
-	//app_sysfreq_req(APP_SYSFREQ_USER_APP_4,APP_SYSFREQ_26M);
+	Software_TimerCancel(xOS_Timer_Module_POWERCONSUMPTION_ID);
+	Software_TimerStart(xOS_Timer_Module_POWERCONSUMPTION_ID,JW_SOFTWARE_PERIOD_ONECE,5000,xOS_Increase_PowerConsumption,0,NULL);
+	app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT,APP_SYSFREQ_26M);
+	xos_app_debug("xOS_Increase_PowerConsumption start---> from 26M");
     return 0;
 }
 
@@ -315,23 +310,43 @@ uint8_t User_App_Power_GetSleep(void)
 
 static uint32_t xOS_Increase_PowerConsumption(uint32_t argc ,uint32_t *argv)
 {
-	xos_app_debug("xOS_Increase_PowerConsumption ");
-	if( xOS_APP_Current_Op==XOS_APP_STATE_WAER_ON_E || xOS_APP_Current_Op==XOS_APP_OP_COVER_OUT_E || xOS_APP_Current_Op==XOS_APP_OP_BOX_OUT_E ){
+	
+	#if 0
+	if( (xOS_APP_Current_Op==XOS_APP_OP_WEAR_ON_E) || (xOS_APP_Current_Op==XOS_APP_OP_COVER_OUT_E) || (xOS_APP_Current_Op==XOS_APP_OP_BOX_OUT_E) ){
 		app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, HAL_CMU_FREQ_52M);
+		Software_TimerStart(xOS_Timer_Module_POWERCONSUMPTION_ID,JW_SOFTWARE_PERIOD_ONECE,5000,xOS_Increase_PowerConsumptionStop,0,NULL);
 	}else{
 
 	}
+	#endif
+	 app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, HAL_CMU_FREQ_32K);
+	 xos_app_debug("xOS_Increase_PowerConsumption stop---> to 32K");
+	//Software_TimerStart(xOS_Timer_Module_POWERCONSUMPTION_ID,JW_SOFTWARE_PERIOD_ONECE,5000,xOS_Increase_PowerConsumptionStop,0,NULL);
+	xOS_Increase_PowerConsumptionStop(0,NULL);
+	xOS_Decrease_PowerConsumption(0,NULL);
+	return false;
+}
+static uint32_t xOS_Increase_PowerConsumptionStop(uint32_t argc ,uint32_t *argv)
+{
+	//xos_app_debug("xOS_Increase_PowerConsumptionStop ");
+    //app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, HAL_CMU_FREQ_32K);
+	//xOS_Decrease_PowerConsumption(0,NULL);
 	return false;
 }
 
+
 static uint32_t xOS_Decrease_PowerConsumption(uint32_t argc ,uint32_t *argv)
 {
-	xos_app_debug("xOS_Decrease_PowerConsumption");
-	if( xOS_APP_Current_Op==XOS_APP_STATE_WAER_OFF_E || xOS_APP_Current_Op==XOS_APP_OP_COVER_IN_E || xOS_APP_Current_Op==XOS_APP_OP_BOX_IN_E ){
+	xos_app_debug("xOS_Decrease_PowerConsumption <---");
+	#if 0
+	if( (xOS_APP_Current_Op==XOS_APP_OP_WEAR_OFF_E) || (xOS_APP_Current_Op==XOS_APP_OP_COVER_IN_E) || (xOS_APP_Current_Op==XOS_APP_OP_BOX_IN_E) ){
 		app_sysfreq_req(APP_SYSFREQ_USER_APP_INIT, HAL_CMU_FREQ_32K);
 	}else{
 
 	}
+	#endif
 	return false;
 }
+
+
 

@@ -6,6 +6,15 @@
 	extern "C"{
 #endif
 #include "stdint.h"
+#ifdef XOS_RTX_OSSDK_ENABLE
+#include "hal_trace.h"
+#include "app_utils.h"
+#include "app_thread.h"
+#include "hal_timer.h"
+#include "cmsis_os.h"
+#include "app_thread.h"
+#include "app_utils.h"
+#endif
 
  
 #define OMNI_USER_MAIN_ENABLE   0

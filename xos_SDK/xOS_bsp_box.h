@@ -4,6 +4,9 @@
 	extern "C"{
 #endif
 
+#include "xOS_bsp_box.h"
+#include "xOS_typedef.h"
+
 typedef struct{
 	uint8_t (*init)(uint8_t* pdata,uint16_t len);
 	uint8_t (*deinit)(uint8_t* pdata,uint16_t len);
