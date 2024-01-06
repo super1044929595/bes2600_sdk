@@ -16,6 +16,21 @@ XOS_UI_BOX_MOD,
 XOS_UI_MAX_MOD,
 }XOS_Shell_UI_Mod_E;
 
+#if 1
+#define offsetof(type,member)  ((size_t)&((type*)0)->member)
+
+#define container_of(ptr,type,member)    ((type*)((char*)(ptr)-offsetof(type,member)))
+
+#else
+
+#define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+#define container_of(ptr, type, member) ({ \
+    const typeof( ((type *)0)->member ) *__mptr = (ptr); \
+    (type *)( (char *)__mptr - offsetof(type,member) );})
+
+#endif
+
+
 typedef bool (*xos_ui_shell_handle_typedef)(uint8_t *pdata,uint16_t len);
 
 typedef struct{
