@@ -23,6 +23,34 @@
 extern "C" {
 #endif
 
+#include "stdint.h"
+
+/* FIFO数据的类型，可以是结构体类型 */
+#define qdata_t uint8_t
+
+/* FIFO长度，实际存放的数据=FIFO_SIZE-1 */
+#define FIFO_SIZE 6
+
+typedef enum {
+    QUEUE_OK,
+    QUEUE_FULL,
+    QUEUE_EMPTY
+}qstatus_t;
+
+typedef struct {
+    uint16_t addr_wr;        /* 写地址 */
+    uint16_t addr_rd;        /* 读地址 */
+    uint16_t length;         /* FIFO长度，实际存放的数据=length-1 */
+    qdata_t fifo[FIFO_SIZE];
+}queue_t;
+
+qstatus_t queue_reset(queue_t *q);
+qstatus_t queue_read(queue_t *q, qdata_t *pdata);
+qstatus_t queue_write(queue_t *q, qdata_t data);
+int queue_isFull(queue_t *q);
+int queue_isEmpty(queue_t *q);
+int queue_print(queue_t *q);
+
 typedef void *(*xos_list_mempool_zmalloc)(size_t);
 typedef void (*xos_list_mempool_free)(void *);
 
