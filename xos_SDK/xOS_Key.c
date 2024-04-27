@@ -1,5 +1,7 @@
-#include "xOS_Key.h"
+#include "xOS_key.h"
 #include "stdint.h"
+#include "hal_trace.h"
+
 
 typedef  bool (*xOS_KeyHandle_Fucntion)(uint8_t * *pdata,uint16_t len);
 
@@ -13,12 +15,12 @@ typedef struct {
 
 bool xOS_KeyHandle_Fucntion_Test(uint8_t** pdata, uint16_t len)
 {
-    printf("\r\n xOS_KeyHandle_Fucntion_Test--->");
+    TRACE(0,"\r\n xOS_KeyHandle_Fucntion_Test--->");
     return false;
 }
 
-
-xOS_KeyType_t xos_shortkeygroup1[] = {
+//---------------------------------------------------oneshot key 
+xOS_KeyType_t xos_shortkeygroup_Left[] = {
     {
         xOS_KEY_Board_DOWN,
         xOS_KEY_FUNCTION_CALLUP,
@@ -39,7 +41,7 @@ xOS_KeyType_t xos_shortkeygroup1[] = {
     },
 };
 
-xOS_KeyType_t xos_shortkeygroup2[] = {
+xOS_KeyType_t xos_shortkeygroup_Right[] = {
     {
         xOS_KEY_Board_DOWN,
         xOS_KEY_FUNCTION_CALLUP,
@@ -60,7 +62,9 @@ xOS_KeyType_t xos_shortkeygroup2[] = {
     },
 };
 
-xOS_KeyType_t xos_shortkeygroup3[] = {
+
+//---------------------------------------------------double key 
+xOS_KeyType_t xos_doublekeygroup_Left[] = {
     {
         xOS_KEY_Board_DOWN,
         xOS_KEY_FUNCTION_CALLUP,
@@ -81,10 +85,40 @@ xOS_KeyType_t xos_shortkeygroup3[] = {
     },
 };
 
- const xOS_KeyType_t * const xosOne_ShortKey_Map[] = {
-    xos_shortkeygroup1,
-    xos_shortkeygroup2,
-    xos_shortkeygroup3,
+ xOS_KeyType_t xos_doublekeygroup_Right[] = {
+	 {
+		 xOS_KEY_Board_DOWN,
+		 xOS_KEY_FUNCTION_CALLUP,
+		 (xOS_KEY_HandleStatus)(2 << xOS_KEY_HANDLE_MEDIUM_ACTIVE),
+		 xOS_KeyHandle_Fucntion_Test,
+	 },
+	 {
+		 xOS_KEY_Board_DOWN,
+		 xOS_KEY_FUNCTION_CALLUP,
+		 (xOS_KEY_HandleStatus)(2 << xOS_KEY_HANDLE_CALL_INCOMING_ACTIVE),
+		 NULL
+	 },
+	 {
+		 xOS_KEY_Board_DOWN,
+		 xOS_KEY_FUNCTION_CALLUP,
+		 (xOS_KEY_HandleStatus)(2 << xOS_KEY_HANDLE_CALL_OUTING_ACTIVE),
+		 NULL
+	 },
+ };
+
+
+
+
+//--------------------------one shot key map
+const xOS_KeyType_t * const xos_One_Shot_Key_Map[] = {
+	xos_shortkeygroup_Left,
+	xos_shortkeygroup_Right,
+};
+
+//--------------------------double key map
+const xOS_KeyType_t * const xos_double_Key_Map[] = {
+	xos_doublekeygroup_Left,
+	xos_doublekeygroup_Right,
 };
 
 
@@ -96,16 +130,22 @@ uint8_t xOS_Key_GroupHandle(uint8_t key_type, uint8_t value)
 
         case  XOS_KEY_SHORT_E:
             //short key handle
-            if (xosOne_ShortKey_Map[value]->ke_handle) {
+            if (xos_One_Shot_Key_Map[value]->ke_handle) {
                 // get from sdk method
-                if (xosOne_ShortKey_Map[value]->key_status) { //*watch
-                    xosOne_ShortKey_Map[value]->ke_handle(NULL, 0);
+                if (xos_One_Shot_Key_Map[value]->key_status) { //*watch
+                    xos_One_Shot_Key_Map[value]->ke_handle(NULL, 0);
                 }
             }
             break;
 
             //double key
             case XOS_KEY_DOUBLE_E:
+				if (xos_One_Shot_Key_Map[value]->ke_handle) {
+				// get from sdk method
+					if (xos_One_Shot_Key_Map[value]->key_status) { //*watch
+						xos_One_Shot_Key_Map[value]->ke_handle(NULL, 0);
+					}
+				}
 
             break;
 
@@ -120,5 +160,4 @@ uint8_t xOS_Key_GroupHandle(uint8_t key_type, uint8_t value)
         }
 
         return 0;
-    }
-
+}
