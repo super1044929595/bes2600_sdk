@@ -8,15 +8,39 @@
 //debug -------------------------------------------------
 #define XOS_TIMER_DEBUG_ENABLE
 #ifdef  XOS_TIMER_DEBUG_ENABLE 
-#define xos_timer_debug(format,...)     TRACE(3,"[xos timer %d ] %s "format "\n",__LINE__,__func__,##__VA_ARGS__);
+#define xos_timer_debug(format,...)     TRACE(5,"[ xos timer %d ] %s "format "\n",__LINE__,__func__,##__VA_ARGS__);
 #else
 #define xos_timer_debug(format,...) 
 #endif
-//end debug 
 
 //typedef 
-#define JW_SOFTWARE_TIMERNUMS     xOS_Timer_Module_MAX//20U
+#define JW_SOFTWARE_TIMERNUMS     xOS_Timer_Module_MAX 
+
+//end debug 
+const char * xos_timer_string[2]={
+
+	"[JW_SOFTWARE_PERIOD_ONECE]",
+	"[JW_SOFTWARE_PERIOD_PERIOD]",
+
+};
+
+const char* xos_timer_id_string[JW_SOFTWARE_TIMERNUMS]={
+
+	"[Timer_INIT]",
+	"[Timer_User]",
+	"[Timer_WEAR]",
+	"[Timer_INBOX]",
+	"[Timer_COVER]",
+	"[Timer_POWERCONSUMPTION]",
+	"[Timer_TWSVOLTABLE]",
+	"[Timer_TWS_BAT]",
+	
+};
+
+
 typedef uint32_t (*xos_timer_callback)(uint32_t argc ,uint32_t *argv);
+static bool xos_TimerSafeCheck(uint32_t curtimer);
+static bool xos_TimerRecordPrint(void);
 
 
 typedef enum{
@@ -71,6 +95,16 @@ void Software_TimerCreate(void)
 }
 
 
+#if 0
+static bool xos_TimerRecordPrint(void)
+{
+	for(int i=0;i<JW_SOFTWARE_TIMERNUMS;i++){
+		xos_timer_debug("in:%d m:%s",i,xos_timer_string[jw_gSoftwareTimerinfo[i].mode])
+	}
+	return false;
+}
+#endif
+
 void Software_TimerStart(uint32_t timer_id,uint8_t time_mode,uint32_t delay,  uint32_t (*timer_cb)\
     (uint32_t argc ,uint32_t *argv),uint32_t argc,uint32_t *argv)
 {
@@ -91,7 +125,7 @@ void Software_TimerStart(uint32_t timer_id,uint8_t time_mode,uint32_t delay,  ui
     jw_gSoftwareTimerinfo[timer_id].status   =SOFTWARE_STATUS_INIT;
 	jw_gSoftwareTimerinfo[timer_id].mode     =time_mode;
 
-	xos_timer_debug("jw Software_TimerStart ");
+	xos_timer_debug("timer mode %s id:%s",xos_timer_string[time_mode],xos_timer_id_string[timer_id]);
 	
 #ifdef XOS_RTX_OSSDK_ENABLE
 	if(xos_common_timer_id!=NULL){
@@ -121,6 +155,9 @@ void Software_TimerStop(uint32_t timer_id)
 
 static void Software_TimerUpdate(void)
 {
+	//safe check 
+	xos_TimerSafeCheck(Software_TimerGetSystick());
+	
 	for(uint32_t i=0;i<JW_SOFTWARE_TIMERNUMS;i++){
 		switch(jw_gSoftwareTimerinfo[i].status){
 
@@ -159,7 +196,7 @@ static void xos_common_timeout_timer_cb(void const *n)
 {
 	//osMutexWait(xos_common_timer_id, osWaitForever);
 	Software_TimerUpdate();//insert 
-	//osMutexRelease(xos_common_timer_id);		
+	//osMutexRelease(xos_common_timer_id);	
 }
 #endif
 
@@ -179,7 +216,19 @@ uint32_t xos_timer_onececallback(uint32_t argc ,uint32_t *argv)
 	return 0;
 }
 
-
+static bool xos_TimerSafeCheck(uint32_t curtimer)
+{
+	static uint32_t _pretime=0;
+	if(	(_pretime!=0) && ((curtimer-_pretime)> (XOS_COMMON_BASETIME*2))){
+			xos_timer_debug("loss time ---->[ waring ]");
+			//assert handle 
+			return true;
+	}else{
+			//xos_timer_debug("loss time ---->[ ok ]");
+	}
+	_pretime=curtimer;
+	return false;
+}
 
 bool xOS_SDKCreate_Timer(void)
 {
@@ -204,10 +253,12 @@ bool xOS_SDKCreate_Timer(void)
 	TRACE(1,"xos_common_timer_id %d",(int)xos_common_timer_id);
 
 #endif
+
 //eg
 //	Software_TimerStart(0,JW_SOFTWARE_PERIOD_ONECE,500,xos_timer_onececallback,0,NULL);
 //  Software_TimerStart(1,JW_SOFTWARE_PERIOD_PERIOD,1000,xos_timer_periodcallback,0,NULL);
 	xos_timer_debug("xOS_SDKCreate_Timer active max num:%d",JW_SOFTWARE_TIMERNUMS);	
+
 	return false;
 }
 
