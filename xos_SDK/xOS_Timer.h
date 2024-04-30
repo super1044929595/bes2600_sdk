@@ -24,13 +24,13 @@
 
 
 typedef enum{
-    xOS_Timer_Module_INIT_ID=0,
-    xOS_Timer_Module_User,
+	xOS_Timer_Module_INIT_ID=0,
+	xOS_Timer_Module_User,
 	xOS_Timer_Module_WEAR_ID,
 	xOS_Timer_Module_INBOX_ID,
 	xOS_Timer_Module_COVER_ID,
-    xOS_Timer_Module_POWERCONSUMPTION_ID,
-    xOS_Timer_Module_TWSVOLTABLE_ID,
+	xOS_Timer_Module_POWERCONSUMPTION_ID,
+	xOS_Timer_Module_TWSVOLTABLE_ID,
 	//add cutomer timer id
 	//-------------------------ID start--------------------------------
 	xOS_Timer_Module_TWS_BAT_ID,
