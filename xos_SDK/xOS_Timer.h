@@ -32,6 +32,9 @@ typedef enum{
     xOS_Timer_Module_POWERCONSUMPTION_ID,
     xOS_Timer_Module_TWSVOLTABLE_ID,
 	//add cutomer timer id
+	//-------------------------ID start--------------------------------
+	xOS_Timer_Module_TWS_BAT_ID,
+	//-------------------------ID end ---------------------------------
 	//end
 	xOS_Timer_Module_MAX,
 }xOS_Timer_Module_ID;
