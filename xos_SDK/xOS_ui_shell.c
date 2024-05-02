@@ -1,4 +1,7 @@
-#include "xOS_ui_shell.h"
+#include "xos_shell.h"
+#include "cmsis_os.h"
+#include "stdlib.h"
+#include "string.h"
 
 #define XOS_SHELL_DEBUG_ENABLE
 #ifdef  XOS_SHELL_DEBUG_ENABLE 
@@ -9,7 +12,7 @@
 // shel loop task 
 #ifdef XOS_BES_SDK_ENABLE
 static void xos_ui_shell_thread(void const *argument);
-osThreadDef(xos_shell_thread, osPriorityHigh,1,1024, "xshell_thread");
+osThreadDef(xos_ui_shell_thread, osPriorityHigh,1,1024, "xshell_thread");
 static osThreadId xos_ui_shell_threadid;
 
 osMailQDef (xos_ui_shell_mailbox,200U,xOS_UI_shell_Info_t);
@@ -36,11 +39,11 @@ static void xos_ui_shell_thread(void const *argument)
     {
         //wait os singal
 		_xshell_event=osMailGet(xos_ui_shell_mailbox,100000);
-		if(_xshell_event.status=osEventMail){
-			_xshell_info=(xOS_UI_shell_Info_t*)_xshell_event.value;
+		if(_xshell_event.status==osOK){
+			_xshell_info=(xOS_UI_shell_Info_t*)&_xshell_event.value;
 			if(_xshell_info){
 				xOS_ui_shell_handle(_xshell_info->ui_mod,_xshell_info->pdata,_xshell_info->len);
-				osPoolFree(_xshell_info->pdata);
+				osPoolFree(_xshell_info->pdata,_xshell_info);// watch on 
 			}			
 			osMailFree(xos_ui_shell_mailbox,&_xshell_event);
 		}
@@ -82,10 +85,10 @@ bool xos_ui_shell_init(void)
 	xos_ui_shell_mailbox_cnt = 0;
 	
 //thread create
-	xos_ui_shell_threadid=osThreadCreate(osThread(xos_shell_thread), NULL)
+	xos_ui_shell_threadid=osThreadCreate(osThread(xos_ui_shell_thread), NULL);
     if (xos_ui_shell_threadid == NULL)  {
         xos_shell_debug("Failed to Create xshell thread");
-        return true
+        return true;
     }
 
 //xopool
@@ -108,10 +111,10 @@ bool xos_ui_shell_send(XOS_Shell_UI_Mod_E mod,uint8_t *pdata,uint16_t len)
     xOS_UI_shell_Info_t *_xshell_info=NULL;
     _xshell_info=(xOS_UI_shell_Info_t*)osMailAlloc(xos_ui_shell_mailbox, 1000);
 	_xshell_info->len=len;
-	_xshell_info->pdata=(uint8_t*)osPoolCAlloc (app_audio_status_mempool);
+	_xshell_info->pdata=(uint8_t*)osPoolCAlloc (xos_shell_mempoolid);
 	ASSERT(_xshell_info->pdata,"[%s] ERROR: xos_ui_shell_send ptr != NULL", __func__);
 	memcpy((uint8_t*)_xshell_info->pdata,(uint8_t*)pdata,len);
-    if(osOK!=osMailPut(xos_ui_shell_mailbox, const void * mail)){
+    if(osOK!=osMailPut(xos_ui_shell_mailbox, (const void*)_xshell_info)){
 		xos_shell_debug("\r\n xos_ui_shell_send error!");
     }else{
     	xos_shell_debug("\r\n xos_ui_shell_send");
@@ -128,4 +131,3 @@ bool xos_ui_shell_register(XOS_Shell_UI_Mod_E xshell_mod,xos_ui_shell_handle_typ
 	xos_shell_module_handle[xshell_mod]=xshell_app;
 	return false;
 }
-
