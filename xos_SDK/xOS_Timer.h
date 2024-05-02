@@ -34,6 +34,7 @@ typedef enum{
 	//add cutomer timer id
 	//-------------------------ID start--------------------------------
 	xOS_Timer_Module_TWS_BAT_ID,
+	
 	//-------------------------ID end ---------------------------------
 	//end
 	xOS_Timer_Module_MAX,
@@ -47,7 +48,7 @@ typedef enum{
 bool xOS_SDKCreate_Timer(void);
 void Software_TimerStart(uint32_t timer_id,uint8_t time_mode,uint32_t delay,  uint32_t (*timer_cb)\
     (uint32_t argc ,uint32_t *argv),uint32_t argc,uint32_t *argv);
-void Software_TimerCancel(uint32_t timer_id);
+bool Software_TimerCancel(uint32_t timer_id);
 
 #endif
 #ifdef __cplusplus
