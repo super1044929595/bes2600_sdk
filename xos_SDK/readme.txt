@@ -10,7 +10,7 @@ python2 tools/generate_crc32_of_image.py out/xxxxx.bin
 
 
 下载网址
-git@codeup.aliyun.com:6342cef7bd947c7ec67c2931/BES/TWS-2056-04SDK.git
+
 
 app_bt_count_connected_device 
 
