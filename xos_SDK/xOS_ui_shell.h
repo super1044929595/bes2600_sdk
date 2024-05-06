@@ -50,5 +50,3 @@ bool xos_ui_shell_register(XOS_Shell_UI_Mod_E xshell_mod,xos_ui_shell_handle_typ
    }
 #endif
 #endif
-
-
