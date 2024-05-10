@@ -1,7 +1,4 @@
 #include "xos_shell.h"
-#include "cmsis_os.h"
-#include "stdlib.h"
-#include "string.h"
 
 #define XOS_SHELL_DEBUG_ENABLE
 #ifdef  XOS_SHELL_DEBUG_ENABLE 
@@ -10,6 +7,8 @@
 #define xos_shell_debug(format,...) 
 #endif
 
+//private members
+static uint8_t xos_module_cnt=0;
 
 //--------------------XOS SHELL LIST -----------
 typedef struct {
@@ -31,10 +30,10 @@ osMailQDef(xos_shell_mailboxid,200U,xOS_UI_shell_Info_t);
 osPoolDef(xos_shell_mempoolid, 1000U, uint8_t);
 static uint8_t xos_ui_shell_mailbox_cnt = 0;
 #endif
-
+  
 
 //member
-#define XOS_SHELL_MOD_ACTIVE_MAX_NUM  32
+#define XOS_SHELL_MOD_ACTIVE_MAX_NUM    	32
 static xos_ui_shell_handle_typedef xos_shell_module_handle[XOS_SHELL_MOD_ACTIVE_MAX_NUM];
 #ifdef XOS_BES_SDK_ENABLE
 //method
@@ -83,8 +82,7 @@ static bool xOS_ui_shell_handle(XOS_Shell_UI_Mod_E mod,uint8_t *pdata,uint16_t l
 		}
 	break;
 
-	case XOS_UI_BOX_MOD
-:
+	case XOS_UI_BOX_MOD:
 		if(xos_shell_module_handle[XOS_UI_BOX_MOD]){
 			xos_shell_debug("xOS_ui_shell_handle XOS_UI_BOX_MOD!");
 			xos_shell_module_handle[XOS_UI_BOX_MOD](pdata,len);
@@ -129,9 +127,6 @@ bool xos_ui_shell_init(void)
     return false;
 }
 
-
-
-
 bool xos_ui_shell_send(XOS_Shell_UI_Mod_E mod,uint8_t *pdata,uint16_t len)
 {
     if( pdata==NULL || len<=0) return true;
@@ -158,5 +153,9 @@ bool xos_ui_shell_register(XOS_Shell_UI_Mod_E xshell_mod,xos_ui_shell_handle_typ
 {
 	ASSERT(xshell_app, "[%s] ERROR: xos_ui_shell_register != NULL", __func__);
 	xos_shell_module_handle[xshell_mod]=xshell_app;
+	if(++xos_module_cnt>XOS_SHELL_MOD_ACTIVE_MAX_NUM){
+		xos_shell_debug(" xos_ui_shell_register register module is over! ");
+		return true;
+	}
 	return false;
 }
