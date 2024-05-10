@@ -5,11 +5,6 @@
 #endif
 
 #include "xos_typedef.h"
-#include "cmsis_os.h"
-#include "app_thread.h"
-#include "app_utils.h"
-#include "xOS_Timer.h"
-#include "xos_sdk_configure.h"
 
 typedef enum{
 XOS_UI_WEAR_MOD,
