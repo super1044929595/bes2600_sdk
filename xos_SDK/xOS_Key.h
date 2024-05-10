@@ -1,18 +1,16 @@
 #ifndef __XOS_KEY_H
 #define __XOS_KEY_H
 
-#include "stdio.h"
-#include "stdint.h"
-#include "stddef.h"
+#include "xos_typedef.h"
 
 #ifdef __cplusplus
     extern "C"{
 #endif
 
-#define XOS_KEY_SHORT_E  0
-#define XOS_KEY_DOUBLE_E 1
-#define XOS_KEY_THREE_E  2
-#define XOS_KEY_LONG_E   3
+#define XOS_KEY_SHORT_E    0
+#define XOS_KEY_DOUBLE_E   1
+#define XOS_KEY_THREE_E    2 
+#define XOS_KEY_LONG_E     3
 
 
 //XOS  Board  Key
@@ -71,6 +69,7 @@ typedef enum{
 	xOS_KEY_EVENT_VOL_UP,
 }xOS_KEY_EVENT_ID;
 
+bool xos_KeyStatusSet(uint8_t tws_side,uint8_t key_type,uint8_t index,xOS_KEY_HandleStatus key_status);
 uint8_t xOS_Key_GroupHandle(uint8_t key_type, uint8_t value);
 
 #ifdef __cplusplus
