@@ -69,9 +69,9 @@ osState_App_handle_public(xos_handle_state pre,xos_handle_operate operate,xos_ha
   +--------------------------------------------------------------------------*/
 const xOS_StateInfo appUserTabel[]={
 
-    {XOS_STATE(XOS_APP_STATE_INITING_E    ,  XOS_APP_STATE_INITDONE_E )      ,XOS_APP_OP_INITING_E     , osState_op_tws_InitDone},
-    {XOS_STATE(XOS_APP_STATE_INITDONE_E   ,  XOS_APP_STATE_BOX_IN_E   )      ,XOS_APP_OP_BOX_IN_E      , osState_OP_tws_BoxIN_Hanlde},   
-    //in box
+	{XOS_STATE(XOS_APP_STATE_INITING_E    ,  XOS_APP_STATE_INITDONE_E )      ,XOS_APP_OP_INITING_E     , osState_op_tws_InitDone},
+	{XOS_STATE(XOS_APP_STATE_INITDONE_E   ,  XOS_APP_STATE_BOX_IN_E   )      ,XOS_APP_OP_BOX_IN_E      , osState_OP_tws_BoxIN_Hanlde},   
+	//in box
 	{XOS_STATE(XOS_APP_STATE_BOX_IN_E     ,  XOS_APP_STATE_COVER_IN_E )      ,XOS_APP_OP_COVER_IN_E    , osState_OP_tws_CoverIn_Hanlde},
 	{XOS_STATE(XOS_APP_STATE_BOX_IN_E     ,  XOS_APP_STATE_COVER_OUT_E )     ,XOS_APP_OP_COVER_OUT_E   , osState_OP_tws_CoverOut_Hanlde},
 	//cover in
@@ -82,7 +82,7 @@ const xOS_StateInfo appUserTabel[]={
 	{XOS_STATE(XOS_APP_STATE_COVER_OUT_E  ,  XOS_APP_OP_BOX_OUT_E )          ,XOS_APP_OP_BOX_OUT_E     , osState_OP_tws_BoxOut_Hanlde},
 	//out box 
 	{XOS_STATE(XOS_APP_OP_BOX_OUT_E       ,  XOS_APP_STATE_WEAR_ON_E )       ,XOS_APP_OP_WEAR_ON_E     , osState_OP_tws_WearOn_Hanlde},
-    {XOS_STATE(XOS_APP_OP_BOX_OUT_E       ,  XOS_APP_STATE_BOX_IN_E )        ,XOS_APP_OP_BOX_IN_E      , osState_OP_tws_BoxIN_Hanlde},
+	{XOS_STATE(XOS_APP_OP_BOX_OUT_E       ,  XOS_APP_STATE_BOX_IN_E )        ,XOS_APP_OP_BOX_IN_E      , osState_OP_tws_BoxIN_Hanlde},
 	//wear on
 	{XOS_STATE(XOS_APP_STATE_WEAR_ON_E    ,  XOS_APP_STATE_BOX_IN_E )        ,XOS_APP_OP_WEAR_ON_E     , osState_OP_tws_WearOn_Hanlde},
 	{XOS_STATE(XOS_APP_STATE_WEAR_ON_E    ,  XOS_APP_STATE_WAER_OFF_E )      ,XOS_APP_OP_WEAR_OFF_E    , osState_OP_tws_WearOff_Hanlde},
