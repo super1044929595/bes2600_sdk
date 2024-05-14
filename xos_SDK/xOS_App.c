@@ -189,14 +189,14 @@ static void xos_power_state_timerhandler(void const *param)
 
 static uint32_t User_APP_PowerStateTableInit(uint32_t argc ,uint32_t *argv)
 {
-    os_HanldeTableInit(0,appUserTabel,sizeof(appUserTabel)/sizeof(appUserTabel[0]));
-
-    os_handleTable_PublicHandle_Register(0, osState_App_handle_public);
-
+	os_HanldeTableInit(0,appUserTabel,sizeof(appUserTabel)/sizeof(appUserTabel[0]));
+	
+	os_handleTable_PublicHandle_Register(0, osState_App_handle_public);
+	
 	xos_app_debug("ADV timeout duration :[%d]", osSTATE_DEFAULT_INEDEX);
-
+	
 	os_Handle_StateSwitch(osSTATE_DEFAULT_INEDEX, XOS_APP_OP_INITING_E);
-
+	
 	User_App_Power_SetSleep(0);
 
 	return 0;
