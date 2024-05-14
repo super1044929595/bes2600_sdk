@@ -42,7 +42,7 @@
 #include "psap_process.h"
 // TODO: Clean up this code...
 #ifndef CODEC_OUTPUT_DEV
-#define CODEC_OUTPUT_DEV                    CFG_HW_AUD_OUTPUT_PATH_SPEAKER_DEV
+#define CODEC_OUTPUT_DEV                  CFG_HW_AUD_OUTPUT_PATH_SPEAKER_DEV
 #endif
 #endif
 
