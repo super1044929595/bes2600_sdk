@@ -5,6 +5,8 @@
 	extern "C"{
 #endif
 
+#include "xos_typedef.h"
+
 typedef struct{
 
 	const char *name;
@@ -30,7 +32,6 @@ typedef struct{
 }XOS_BSP_Wear_Driver_s;
 
 int xos_bsp_wear_regester(uint32_t *pdata,uint16_t len);
-int xos_bsp_wear_regester(void);
 int xos_bsp_wear_readchipid(void);
 int xos_bsp_wear_power_on(uint32_t *pdata,uint16_t len);
 int xos_bsp_wear_power_down(uint32_t *pdata,uint16_t len);
@@ -39,6 +40,7 @@ int xos_bsp_wear_send(uint32_t *pdata,uint16_t len);
 int xos_bsp_wear_receive(uint32_t *pdata,uint16_t len);
 int xos_bsp_wear_suspend(uint32_t *pdata,uint16_t len);
 int xos_bsp_wear_resume(uint32_t *pdata,uint16_t len);
+int xos_bsp_wear_callback(uint32_t *pdata,uint16_t len);
 
 
 #ifdef __cplusplus
