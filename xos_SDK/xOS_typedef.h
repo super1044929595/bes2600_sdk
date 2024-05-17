@@ -13,8 +13,8 @@
 #include "stdbool.h"
 #include "hal_timer.h"
 #include "cmsis_os.h"
-#include "app_thread.h"
-#include "app_utils.h"
+//#include "app_thread.h"
+//#include "app_utils.h"
 #include "hal_trace.h"
 #include "xos_sdk_configure.h"
 
@@ -26,3 +26,4 @@ typedef unsigned int   uint32_t;
 }
 #endif
 #endif
+

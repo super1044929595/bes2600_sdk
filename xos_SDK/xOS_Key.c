@@ -186,3 +186,4 @@ uint8_t xOS_Key_GroupHandle(uint8_t key_type, uint8_t value)
 
         return 0;
 }
+

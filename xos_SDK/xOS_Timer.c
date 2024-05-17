@@ -1,8 +1,5 @@
 //include 
 #include "xOS_Timer.h"
-#include "stdint.h"
-#include "stddef.h"
-#include "string.h"
 
 #ifdef XOS_TIMER_FUNCTION_ENABLE
 
@@ -35,12 +32,13 @@ const char* xos_timer_id_string[JW_SOFTWARE_TIMERNUMS]={
 	"[Timer_POWERCONSUMPTION]",
 	"[Timer_TWSVOLTABLE]",
 	"[Timer_TWS_BAT]",
+	"[Timer_OVERDIS]"
 	
 };
 
 
 typedef uint32_t (*xos_timer_callback)(uint32_t argc ,uint32_t *argv);
-static bool xos_TimerSafeCheck(uint32_t curtimer);
+//static bool xos_TimerSafeCheck(uint32_t curtimer);
 static void Software_TimerStop(uint32_t timer_id);
 #ifdef XOS_TIMER_SELFT_DEBUG
 static bool xos_TimerPrintfBarprocess(uint8_t xos_index);
@@ -200,7 +198,7 @@ void Software_TimerStop(uint32_t timer_id)
 static void Software_TimerUpdate(void)
 {
 	//safe check 
-	xos_TimerSafeCheck(Software_TimerGetSystick());
+	//xos_TimerSafeCheck(Software_TimerGetSystick());
 	
 	for(uint32_t i=0;i<JW_SOFTWARE_TIMERNUMS;i++){
 		switch(jw_gSoftwareTimerinfo[i].status){
@@ -260,6 +258,8 @@ uint32_t xos_timer_onececallback(uint32_t argc ,uint32_t *argv)
 	return 0;
 }
 
+
+/*
 static bool xos_TimerSafeCheck(uint32_t curtimer)
 {
 	static uint32_t _pretime=0;
@@ -272,7 +272,7 @@ static bool xos_TimerSafeCheck(uint32_t curtimer)
 	}
 	_pretime=curtimer;
 	return false;
-}
+}*/
 
 bool xOS_SDKCreate_Timer(void)
 {

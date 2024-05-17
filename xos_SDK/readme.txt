@@ -10,10 +10,11 @@ python2 tools/generate_crc32_of_image.py out/xxxxx.bin
 
 
 下载网址
-
+git@codeup.aliyun.com:6342cef7bd947c7ec67c2931/BES/TWS-2056-04SDK.git
 
 app_bt_count_connected_device 
 
+#define TRACE(str, ...)                 do { printf("%s/" str "\n", __FUNCTION__, __VA_ARGS__); } while (0)
 
 //认证
 GFPS_ENABLED 谷歌弹窗
@@ -93,14 +94,14 @@ void  xos_App_MediaDef_ResetHandle(void)
 
 void xos_App_HfpDef_ResetHandle(void)
 {
-  default_stream_volume.a2dp_vol=8;
-  default_stream_volume.hfp_vol=8;
+    default_stream_volume.a2dp_vol=8;
+    default_stream_volume.hfp_vol=8;
   
     uint8_t i;
     btif_remote_device_t *remDev = NULL;
     btif_link_mode_t mode = BTIF_BLM_SNIFF_MODE;
     btif_hf_channel_t* chan;
-  struct BT_DEVICE_T* curr_device = app_bt_get_device(app_bt_audio_get_curr_sco_device());  
+    struct BT_DEVICE_T* curr_device = app_bt_get_device(app_bt_audio_get_curr_sco_device());  
 
     for(i = 0; i < BT_DEVICE_NUM; i++) {
         remDev = (btif_remote_device_t *)btif_hf_cmgr_get_remote_device(app_bt_get_device(i)->hf_channel);
@@ -145,6 +146,10 @@ bool nvrecord_facreset_readdefvol(void)
 {
  return  nvrecord_extension_p->defvol_resetEnable;
 }
+
+
+#define BT_MAX_TX_PWR_IDX     (3)        //idx0~5
+#define BT_INIT_TX_PWR_IDX    (3)
 --------------------------------------------------------------------------------------------------------------
 
 
@@ -195,9 +200,10 @@ app_ibrt_customif_ui.cpp
 |
 |
 |
-|---mobile conn--|---app_bt_ibrt_has_mobile_link_connected()   主耳单耳是否连接手机 
-|                |#include "app_tws_ibrt_conn_api.h"
-|                |---app_tws_ibrt_slave_ibrt_link_connected()  从耳手机是否连接
+|---mobile conn---|---app_bt_ibrt_has_mobile_link_connected()   主耳单耳是否连接手机 
+|                 |#include "app_tws_ibrt_conn_api.h"
+|                 |---app_tws_ibrt_slave_ibrt_link_connected()  从耳手机是否连接
+|                 |---app_ibrt_nvrecord_get_latest_mobiles_addr（） 配对记录
 |
 |
 |-------HFP-------|
@@ -211,6 +217,8 @@ app_ibrt_customif_ui.cpp
 |                 |
 |                 |-------媒体状态判断     a2dp_is_music_ongoing()
                   |-------媒体播放状态刷新 app_ibrt_customif_avrcp_callback()
+                  |-------调整电影模延时   sbm_update_target_jitter_buf_length(uint16_t targetMs)<--a2dp_aduio_triggered_handler     if (APP_IBRT_MOBILE_LINK_CONNECTED(&curr_device->remote))
+
 |
 |------TWS--------|
 |                 |------ tws 连接状态 app_tws_ibrt_tws_link_connected()
@@ -225,4 +233,6 @@ app_ibrt_customif_ui.cpp
 |------GFPS-------|
 |                 |------app_tell_battery_info_handler() 电量显示  \
                         *batteryValueCount = 3 2耳机加充电盒的个数 batteryValue[1] 不  显示的写0x7F
+                        uint8_t gfps_ble_generate_accountkey_data(uint8_t *outputData)  谷歌弹窗发出的内容
+
 
