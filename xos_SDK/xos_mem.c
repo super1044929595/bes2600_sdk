@@ -1,4 +1,3 @@
-
 /********************************************************************************************************************
 *add by jw on 2021-2-8
 *Function:This file called by user when debug the breadpoint on the SDK
@@ -8,6 +7,16 @@
 *
 *
 *********************************************************************************************************************/
+#include "xos_typedef.h"
+#include "xos_mem.h"
+
+
+#define XOS_DEBUG_MEM_ENABLE
+#ifdef  XOS_DEBUG_MEM_ENABLE 
+#define xos_mem_debug(format,...)     TRACE(5,"[xos mem %d] %s "format "\n",__LINE__,__func__,##__VA_ARGS__);
+#else
+#define xos_mem_debug(format,...) 
+#endif
 
 
 /* Allocate the memory for the heap. */
@@ -42,55 +51,9 @@ static size_t xBlockAllocatedBit = 0;
 
 void jwAssert(void)
 {
-	//printf("\r\n -------->error!")
-	//APP_UI_TRACE(0,"HJW----->Mem Malloc ERROR !");
+	//xos_mem_debug("jwAssert !");  cancel this handle
 	//do nothing 
 }
-
-
-void Process_Printf(void)
-{
-	int i;
-	const char* arr = "-\\|/";
-	char buf[120];
-	memset(buf, 0x00, sizeof(buf));
-	buf[0] = '=';
-	buf[1] = '>';
-	for (i = 1; i <= 100; i++) {
-		printf("\rprocess:[%-100s]%d%% %c", buf, i, arr[i % 4]);
-		// fflush(stdout);
-		buf[i] = '=';
-		buf[i + 1] = '>';
-		fflush(stdout);
-		//sleep()
-		//osdelay(1);
-	}
-	printf("\n");
-}
-
-bool xos_PrintfBarprocess(uint8_t xos_index)
-{
-	int i;
-	const char* arr = "-\\|/";
-	char buf[120];
-	printf("\n");
-	if (xos_index > 100) return true;
-	memset(buf, 0x00, sizeof(buf));
-	buf[0] = '=';
-	buf[1] = '>';
-	for (i = 1; i <= xos_index; i++) {
-		printf("\rprocess:[%-100s]%d%% %c", buf, i, arr[i % 4]);
-	    //fflush(stdout);
-		buf[i] = '=';
-		buf[i + 1] = '>';
-		//fflush(stdout);
-		//sleep()
-		//osdelay(1);
-	}
-	return false;
-}
-
-
 
 /*************************************************************************
 *Function:  JW_MemAlloc
@@ -228,7 +191,7 @@ void* JW_MemAlloc(size_t jwWantSize)
 		}
 	}
 #endif
-	//APP_UI_TRACE(0,"\r\n HJW----->MEM Successful");
+	xos_mem_debug("  HJW----->MEM Successful");
 	//configASSERT( ( ( ( size_t ) pvReturn ) & ( size_t ) portBYTE_ALIGNMENT_MASK ) == 0 );
 	return pvReturn;
 }
@@ -276,7 +239,7 @@ void JW_MemFree(void* pv)
 			jwAssert();
 		}
 	}
-	//APP_UI_TRACE(0,"\r\n HJW----------------------------------->MEM free ");
+	xos_mem_debug(" free successful!");
 }
 
 size_t xPortGetFreeHeapSize(void)
@@ -313,7 +276,7 @@ static void prvHeapInit(void)
 
 	pucAlignedHeap = (uint8_t*)uxAddress;
 
-	xStart.pxNextFreeBlock = (JW_BLOCK_LINK*)pucAlignedHeap;
+	xStart.pxNextFreeBlock = (struct JW_BLOCK_LINK*)pucAlignedHeap;
 	xStart.xBlockSize = (size_t)0;
 
 	uxAddress = ((size_t)pucAlignedHeap) + xTotalHeapSize;
@@ -331,6 +294,8 @@ static void prvHeapInit(void)
 	xFreeBytesRemaining = pxFirstFreeBlock->xBlockSize;
 	//printf("\r\n xFreeBytesRemaining is %2d", xFreeBytesRemaining);
 	xBlockAllocatedBit = ((size_t)1) << ((sizeof(size_t) * heapBITS_PER_BYTE) - 1);
+
+	xos_mem_debug("prvHeapInit!");
 }
 /*-----------------------------------------------------------*/
 
@@ -398,7 +363,7 @@ size_t JW_MEMLeftSize(void)
 {
 	jwMemBytesRemain = xFreeBytesRemaining;
 #if defined  JW_MEM_PRINTFENABLE
-	printf("\r\n xFreeBytesRemaining  is %2d", jwMemBytesRemain);
+	xos_mem_debug("\r\n xFreeBytesRemaining  is %2d", jwMemBytesRemain);
 #endif
 	return jwMemBytesRemain;
 }
@@ -408,17 +373,18 @@ void JW_MEM_TEST(void)
 	uint8_t* prc = NULL;
 	uint8_t* prc1 = NULL;
 	uint8_t* prc2 = NULL;
-	for (int i = 0; i < 10000; i++) {
+	for (int i = 0; i < 100; i++) {
 		prc = (uint8_t*)JW_MemAlloc(128);
 		prc1 = (uint8_t*)JW_MemAlloc(128);
 		prc2 = (uint8_t*)JW_MemAlloc(128);
-		memcpy((char*)prc,"tesassjahgsag",128);
-		
+		sprintf((char*)prc,"%s","tesassjahgsag");
 		JW_MemFree(prc);
 		JW_MemFree(prc2);
-		JW_MemFree(prc1);
+		JW_MemFree(prc1);		
 	}
-
-
 }
+
+
+
+
 
