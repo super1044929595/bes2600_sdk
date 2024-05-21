@@ -33,4 +33,4 @@ bool xos_PrintfBarprocess(uint8_t xos_index);
 #ifdef __cplusplus
 }
 #endif
-
+#endif
