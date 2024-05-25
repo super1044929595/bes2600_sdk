@@ -7,6 +7,13 @@
 
 #include "xos_typedef.h"
 
+#define PLATFORM_NAME_SIZE 32
+
+struct platform_device_id{
+	char name[PLATFORM_NAME_SIZE];
+	uint8_t*  driver_data;  
+};
+
 typedef struct{
 
 	const char *name;
@@ -29,6 +36,8 @@ typedef struct{
 
 	int (*callback)(uint32_t *pdata,uint16_t len);
 
+	const struct platform_device_id *id_table;
+	//struct device_driver   drive;
 }XOS_BSP_Wear_Driver_s;
 
 int xos_bsp_wear_regester(uint32_t *pdata,uint16_t len);
